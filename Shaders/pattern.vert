@@ -2,6 +2,7 @@
 
 // Animation variable
 uniform float uniformTime;
+uniform float   vertex_flag;
 varying vec2 vST;                   // texture coords
 varying vec3 vN;                    // normal vector
 varying vec3 vL;                    // vector from point to light
@@ -23,8 +24,10 @@ main( )
     // to the light position
     vE = vec3( 0., 0., 0. ) - ECposition.xyz; // vector from the point
     vec3 new_vertex = gl_Vertex.xyz;
-    new_vertex.x = gl_Vertex.x + uniformTime;
-    new_vertex.y = gl_Vertex.y;
-    new_vertex.z = gl_Vertex.z;
-    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+
+
+    new_vertex.x = gl_Vertex.x + (sin(dot(gl_Vertex.xy ,vec2(12.9898,78.233)))*(uniformTime+0.1)*3.*vertex_flag) ;
+    new_vertex.y = gl_Vertex.y + (gl_Vertex.y * sin(0.1 + uniformTime)*3.*vertex_flag) ;
+    new_vertex.z = gl_Vertex.z + (gl_Vertex.z * tan(uniformTime)*vertex_flag) ;
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(new_vertex, 1);
 }

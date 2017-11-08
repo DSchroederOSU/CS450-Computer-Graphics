@@ -1,6 +1,7 @@
 #version 110
 
 uniform float uKa, uKd, uKs, uniformTime, uPat; // coefficients of each type of lighting
+uniform float fragment_flag;
 uniform vec3 uColor; // object color
 uniform vec3 uSpecularColor; // light color
 uniform float uShininess; // specular exponent
@@ -14,7 +15,7 @@ main( )
 {
 	vec3 myColor = vec3(0,1,1);
 
-    if(vST.s > (0. + uniformTime) && vST.s < (0.5 + uniformTime)){
+    if(vST.s > (0. + uniformTime)*fragment_flag && vST.s < (0.5 + uniformTime)*fragment_flag){
         myColor = vec3(1,0,0);
     }
 
