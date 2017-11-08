@@ -1,4 +1,0 @@
-\contentsline {section}{\numberline {I}Introduction}{2}{section.1}
-\contentsline {section}{\numberline {II}Memory Management: Windows}{2}{section.2}
-\contentsline {section}{\numberline {III}Memory Management: FreeBSD}{4}{section.3}
-\contentsline {section}{\numberline {IV}Conclusion}{5}{section.4}

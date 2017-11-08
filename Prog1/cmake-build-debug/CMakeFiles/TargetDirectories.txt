@@ -1,3 +1,0 @@
-/Users/DanielSchroederMac/Desktop/Oregon State University/Fall 2017/CS 450 Computer Graphics/Prog1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/DanielSchroederMac/Desktop/Oregon State University/Fall 2017/CS 450 Computer Graphics/Prog1/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/DanielSchroederMac/Desktop/Oregon State University/Fall 2017/CS 450 Computer Graphics/Prog1/cmake-build-debug/CMakeFiles/Prog1.dir
