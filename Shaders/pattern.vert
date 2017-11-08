@@ -23,7 +23,7 @@ main( )
     // to the light position
     vE = vec3( 0., 0., 0. ) - ECposition.xyz; // vector from the point
     vec3 new_vertex = gl_Vertex.xyz;
-    new_vertex.x = gl_Vertex.x;
+    new_vertex.x = gl_Vertex.x + uniformTime;
     new_vertex.y = gl_Vertex.y;
     new_vertex.z = gl_Vertex.z;
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
