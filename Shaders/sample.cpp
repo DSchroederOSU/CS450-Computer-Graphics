@@ -198,12 +198,13 @@ float Time;
 float VERTEX = 0.;
 float FRAGMENT = 1.;
 float FREEZE = 1.;
-float PATTERN = 1.;
+float PATTERN = 0.;
+float TIMEATFREEZE;
 float pat = 0;
 GLSLProgram *Pattern;
 float factor = 0;
-
-
+float dt;
+int ms;
 unsigned char *texture;
 int texture_w, texture_h;
 
@@ -291,19 +292,18 @@ main( int argc, char *argv[ ] )
 void
 Animate( )
 {
+	ms = glutGet(GLUT_ELAPSED_TIME);
+
+    dt = (glutGet(GLUT_ELAPSED_TIME) - TIMEATFREEZE);
+    ms %= TIME_VARIABLE;
+
 	if ( FREEZE == 1){
-		int ms = glutGet(GLUT_ELAPSED_TIME);
-
-
-		ms %= TIME_VARIABLE;
-		printf("%d\n", ms);
-
-		Time = 100. * ((float)ms / (float)TIME_VARIABLE);
-		printf("%f\n", Time);
+		Time = (100. * (((float) ms / (float)TIME_VARIABLE) - dt));
 	}
-
 	// animate with time here:
 	// force a call to Display( ) next time it is convenient:
+
+
 
 	glutSetWindow( MainWindow );
 	glutPostRedisplay( );
@@ -856,10 +856,15 @@ Keyboard( unsigned char c, int x, int y )
 	switch( c )
 	{
 		case 'f':
-			if( FREEZE == 1.)
+			if( FREEZE == 1.) {
 				FREEZE = 0.;
-			else
+			}
+			else{
+                TIMEATFREEZE =  glutGet(GLUT_ELAPSED_TIME);
+
 				FREEZE = 1.;
+			}
+
 			break;
 
 		case 'F':
