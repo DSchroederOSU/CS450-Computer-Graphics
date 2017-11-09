@@ -195,7 +195,10 @@ int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
 float Time;
-float dist = 0;
+float VERTEX = 0.;
+float FRAGMENT = 1.;
+float FREEZE = 1.;
+float PATTERN = 1.;
 float pat = 0;
 GLSLProgram *Pattern;
 float factor = 0;
@@ -288,9 +291,17 @@ main( int argc, char *argv[ ] )
 void
 Animate( )
 {
-	int ms = glutGet(GLUT_ELAPSED_TIME);
-	ms %= TIME_VARIABLE;
-	Time = 100. * ((float)ms / (float)TIME_VARIABLE);
+	if ( FREEZE == 1){
+		int ms = glutGet(GLUT_ELAPSED_TIME);
+
+
+		ms %= TIME_VARIABLE;
+		printf("%d\n", ms);
+
+		Time = 100. * ((float)ms / (float)TIME_VARIABLE);
+		printf("%f\n", Time);
+	}
+
 	// animate with time here:
 	// force a call to Display( ) next time it is convenient:
 
@@ -408,23 +419,21 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
-
-
-	printf("%f\n",abs(sin(DEG2RAD*(int)(Time*3.6))/2));
-
-	Pattern->Use();
-	Pattern->SetUniformVariable((char *)"uniformTime",(float)(abs(sin(DEG2RAD*(int)(Time*3.6))/2)));
-	Pattern->SetUniformVariable((char *)"uDist",(float)(1.0));
-	Pattern->SetUniformVariable((char *)"uPat",(float)(pat));
-	Pattern->SetUniformVariable((char *)"uKa",(float)0.25);
-	Pattern->SetUniformVariable((char *)"uKd",(float).5);
-	Pattern->SetUniformVariable((char *)"uKs",(float).25);
-	Pattern->SetUniformVariable((char *)"uShininess",(float)1);
-	Pattern->SetUniformVariable((char *)"uS0",1);
-	Pattern->SetUniformVariable((char *)"uT0",1);
-	Pattern->SetUniformVariable((char *)"uSize",(float)1);
-	// draw the current object:
-
+	if( PATTERN ) {
+		Pattern->Use();
+		Pattern->SetUniformVariable((char *) "uniformTime", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
+		Pattern->SetUniformVariable((char *) "vertex_flag", (float) (VERTEX));
+		Pattern->SetUniformVariable((char *) "fragment_flag", (float) (FRAGMENT));;
+		Pattern->SetUniformVariable((char *) "uPat", (float) (pat));
+		Pattern->SetUniformVariable((char *) "uKa", (float) 0.25);
+		Pattern->SetUniformVariable((char *) "uKd", (float) .5);
+		Pattern->SetUniformVariable((char *) "uKs", (float) .25);
+		Pattern->SetUniformVariable((char *) "uShininess", (float) 1);
+		Pattern->SetUniformVariable((char *) "uS0", 1);
+		Pattern->SetUniformVariable((char *) "uT0", 1);
+		Pattern->SetUniformVariable((char *) "uSize", (float) 1);
+		// draw the current object:
+	}
 	glCallList( BoxList );
 
 	if( DepthFightingOn != 0 )
@@ -455,6 +464,8 @@ Display( )
 	glDisable(GL_TEXTURE_2D);
 
 	Pattern->Use(0);
+
+	glCallList(AxesList);
 	// draw some gratuitous text that just rotates on top of the scene:
 //****************
 	/*glDisable( GL_DEPTH_TEST );
@@ -844,6 +855,34 @@ Keyboard( unsigned char c, int x, int y )
 
 	switch( c )
 	{
+		case 'f':
+			if( FREEZE == 1.)
+				FREEZE = 0.;
+			else
+				FREEZE = 1.;
+			break;
+
+		case 'F':
+			FRAGMENT = 1.;
+			VERTEX = 0.;
+			break;
+
+		case 'B':
+			VERTEX = 1.;
+			FRAGMENT = 1.;
+			break;
+
+		case 'V':
+			VERTEX = 1.;
+			FRAGMENT = 0.;
+			break;
+
+		case 'N':
+			if( PATTERN == 1.)
+				PATTERN = 0.;
+			else
+				PATTERN = 1.;
+			break;
 		case 'o':
 		case 'O':
 			WhichProjection = ORTHO;
