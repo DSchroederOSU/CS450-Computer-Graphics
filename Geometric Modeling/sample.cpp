@@ -11,17 +11,10 @@
 #include "glew.h"
 #endif
 
-#include <OpenGL/gl3.h>
-
-#include "glslprogram.h"
 #include <OpenGL/gl.h>
-
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include "mjbsphere.cpp"
-#include "BmpToTexture.cpp"
-
-
+#include "drawcurve.cpp"
 //	This is a sample OpenGL / GLUT program
 //
 //	The objective is to draw a 3d object and change the color of the axes
@@ -49,7 +42,7 @@
 
 // title of these windows:
 
-const char *WINDOWTITLE = { "Program 5 - Shaders By Daniel Schroeder" };
+const char *WINDOWTITLE = { "OpenGL / GLUT Sample -- Joe Graphics" };
 const char *GLUITITLE   = { "User Interface Window" };
 
 
@@ -64,10 +57,9 @@ const int GLUIFALSE = { false };
 #define ESCAPE		0x1b
 
 
-#define TIME_VARIABLE 2000
 // initial window size:
 
-const int INIT_WINDOW_SIZE = { 900 };
+const int INIT_WINDOW_SIZE = { 600 };
 
 
 // size of the box:
@@ -94,7 +86,7 @@ const int LEFT   = { 4 };
 const int MIDDLE = { 2 };
 const int RIGHT  = { 1 };
 
-const float DEG2RAD = 3.14159/180;
+
 // which projection:
 
 enum Projections
@@ -176,9 +168,8 @@ const GLfloat FOGSTART    = { 1.5 };
 const GLfloat FOGEND      = { 4. };
 
 
-
 // non-constant global variables:
-GLuint  stationaryTwo;
+
 int		ActiveButton;			// current button that is down
 GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
@@ -194,19 +185,6 @@ int		WhichProjection;		// ORTHO or PERSP
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
-float Time;
-float VERTEX = 0.;
-float FRAGMENT = 1.;
-float FREEZE = 1.;
-float PATTERN = 0.;
-float TIMEATFREEZE;
-float pat = 0;
-GLSLProgram *Pattern;
-float factor = 0;
-float dt;
-int ms;
-unsigned char *texture;
-int texture_w, texture_h;
 
 // function prototypes:
 
@@ -236,6 +214,14 @@ void	Visibility( int );
 void	Axes( float );
 void	HsvRgb( float[3], float [3] );
 
+
+//---------------------------------------------------
+//PROGRAM 6 GEOMETRIC MODELING
+//---------------------------------------------------
+
+#define TIME_VARIABLE 10000
+float Time;
+GLuint	randomList;
 // main program:
 
 int
@@ -292,20 +278,19 @@ main( int argc, char *argv[ ] )
 void
 Animate( )
 {
-	ms = glutGet(GLUT_ELAPSED_TIME);
+	glutSetWindow( MainWindow );
+	// put animation stuff in here -- change some global variables
+	// for Display( ) to find:
 
-    dt = (glutGet(GLUT_ELAPSED_TIME) - TIMEATFREEZE);
-    ms %= TIME_VARIABLE;
+	int ms = glutGet( GLUT_ELAPSED_TIME );	// milliseconds
 
-	if ( FREEZE == 1){
-		Time = (100. * (((float) ms / (float)TIME_VARIABLE) - dt));
-	}
-	// animate with time here:
+	ms  %=  (TIME_VARIABLE);
+	Time = (float)ms  /  (float)TIME_VARIABLE;        // [ 0., 1. )
 	// force a call to Display( ) next time it is convenient:
 
+	Time = (int)(Time*360)* M_PI / 180.0;
 
 
-	glutSetWindow( MainWindow );
 	glutPostRedisplay( );
 }
 
@@ -373,7 +358,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( -2., 11., -30.,     0., 0., 0.,     0., 1., 0. );
+	gluLookAt( 0., 6., -12.,     0., 0., 0.,     0., 1., 0. );
 
 
 	// rotate the scene:
@@ -419,22 +404,94 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
-	if( PATTERN ) {
-		Pattern->Use();
-		Pattern->SetUniformVariable((char *) "uniformTime", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
-		Pattern->SetUniformVariable((char *) "vertex_flag", (float) (VERTEX));
-		Pattern->SetUniformVariable((char *) "fragment_flag", (float) (FRAGMENT));;
-		Pattern->SetUniformVariable((char *) "uPat", (float) (pat));
-		Pattern->SetUniformVariable((char *) "uKa", (float) 0.25);
-		Pattern->SetUniformVariable((char *) "uKd", (float) .5);
-		Pattern->SetUniformVariable((char *) "uKs", (float) .25);
-		Pattern->SetUniformVariable((char *) "uShininess", (float) 1);
-		Pattern->SetUniformVariable((char *) "uS0", 1);
-		Pattern->SetUniformVariable((char *) "uT0", 1);
-		Pattern->SetUniformVariable((char *) "uSize", (float) 1);
-		// draw the current object:
-	}
-	glCallList( BoxList );
+
+	// draw the current object:
+	Point a;
+	a.x0 = 0;
+	a.y0 = 0;
+	a.z0 = 0;
+
+	Point b;
+	b.x0 = 4;
+	b.y0 = 3;
+	b.z0 = 0;
+
+	Point c;
+	c.x0 = 4;
+	c.y0 = 0;
+	c.z0 = 0;
+
+	Point d;
+	d.x0 = 0;
+	d.y0 = 0;
+	d.z0 = 0;
+
+	Curve petal1;
+	petal1.p0 = a;
+	petal1.p1 = b;
+	petal1.p2 = c;
+	petal1.p3 = d;
+	petal1.r = 1;
+	petal1.g = .3;
+	petal1.b = 0.2;
+	Curve petal2 = petal1;
+	Curve petal3 = petal1;
+	Curve petal4 = petal1;
+	Curve petal5  = petal1;
+	Curve petal6  = petal1;
+	/*
+	rotateCurveZ(Time, petal1, 0);
+	rotateCurveZ(Time, petal2, 60);
+	rotateCurveZ(Time, petal3, 120);
+	rotateCurveZ(Time, petal4, 180);
+	rotateCurveZ(Time, petal5, 240);
+	rotateCurveZ(Time, petal6, 300);
+	*/
+
+	int i;
+
+	glPushMatrix();
+		printf("%f\n", -1.+rand()%3);
+		glRotatef( rand()%360 + Time * 180.0 / M_PI,   -1.+rand()%3, -1.+ rand()%3, -1.+ rand()%3  );
+
+
+		for (i = 0; i < 100; i ++ ){
+
+			Point a;
+			a.x0 = a.x = 0. + (rand()%6)+ (-3);
+			a.y0 = a.y = 0. + (rand()%6)+ (-3);
+			a.z0 = a.z = 0. + (rand()%6)+ (-3);
+
+			Point b;
+			b.x0 = b.x = 0. + (rand()%6)+ (-3);
+			b.y0 = b.y = 0. + (rand()%6)+ (-3);
+			b.z0 = b.z = 0. + (rand()%6)+ (-3);
+
+			Point c;
+			c.x0 = c.x = 0. + (rand()%6)+ (-3);
+			c.y0 = c.y = 0. + (rand()%6)+ (-3);
+			c.z0 = c.z = 0. + (rand()%6)+ (-3);
+
+			Point d;
+			d.x0 = d.x = 0. + (rand()%6)+ (-3);
+			d.y0 = d.y = 0. + (rand()%6)+ (-3);
+			d.z0 = d.z = 0. + (rand()%6)+ (-3);
+
+			float t = Time * 180.0 / M_PI;
+			float hsv[3] = {(i*20.)+t, 1., 1.};
+			float rgb[3];
+			HsvRgb(hsv, rgb);
+			Curve curve;
+			curve.p0 = a;
+			curve.p1 = b;
+			curve.p2 = c;
+			curve.p3 = d;
+			curve.r = rgb[0];
+			curve.g = rgb[1];
+			curve.b = rgb[2];
+			makeCurve(curve, 20);
+		}
+	glPopMatrix();
 
 	if( DepthFightingOn != 0 )
 	{
@@ -444,34 +501,8 @@ Display( )
 		glPopMatrix( );
 	}
 
-	/*
-	glEnable(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-
-	// Project 3 - Draw object
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_w, texture_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
-	*/
-
-	glPushMatrix();
-	glCallList( stationaryTwo );
-	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
-
-	Pattern->Use(0);
-
-	glCallList(AxesList);
 	// draw some gratuitous text that just rotates on top of the scene:
-//****************
-	/*glDisable( GL_DEPTH_TEST );
-	glColor3f( 0., 1., 1. );
-	DoRasterString( 0., 1., 0., "Text That Moves" );*/
-
 
 	// draw some gratuitous text that is fixed on the screen:
 	//
@@ -482,15 +513,6 @@ Display( )
 	//
 	// the modelview matrix is reset to identity as we don't
 	// want to transform these coordinates
-
-	/*lDisable( GL_DEPTH_TEST );
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity( );
-	gluOrtho2D( 0., 100.,     0., 100. );
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity( );
-	glColor3f( 1., 1., 1. );
-	DoRasterString( 5., 5., 0., "Text That Doesn't" );*/
 
 
 	// swap the double-buffered framebuffers:
@@ -778,37 +800,18 @@ InitGraphics( )
 
 	// init glew (a window must be open to do this):
 
-	#ifdef WIN32
-		GLenum err = glewInit( );
-		if( err != GLEW_OK )
-		{
-			fprintf( stderr, "glewInit Error\n" );
-		}
-		else
-			fprintf( stderr, "GLEW initialized OK\n" );
-		fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-	#endif
-
-	//init textures
-	texture = BmpToTexture("worldtex.bmp", &texture_w, &texture_h);
-
-
-	//init shaders
-	Pattern = new GLSLProgram( );
-	bool valid = Pattern->GLSLProgram::Create( "pattern.vert",  "pattern.frag" );
-	if( ! valid )
+#ifdef WIN32
+	GLenum err = glewInit( );
+	if( err != GLEW_OK )
 	{
-		fprintf( stderr, "Shader cannot be created!\n" );
-		DoMainMenu( QUIT );
+		fprintf( stderr, "glewInit Error\n" );
 	}
 	else
-	{
-		fprintf( stderr, "Shader created.\n" );
-	}
-	Pattern->GLSLProgram::SetVerbose( false );
+		fprintf( stderr, "GLEW initialized OK\n" );
+	fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+#endif
+
 }
-
-
 
 
 // initialize the display lists that will not change:
@@ -819,28 +822,31 @@ InitGraphics( )
 void
 InitLists( )
 {
+	float dx = BOXSIZE / 2.f;
+	float dy = BOXSIZE / 2.f;
+	float dz = BOXSIZE / 2.f;
 	glutSetWindow( MainWindow );
-	const float DEG2RAD = 3.14159/180;
+
+	// create the object:
+
+	BoxList = glGenLists( 1 );
+	glNewList( BoxList, GL_COMPILE );
 
 
-	stationaryTwo = glGenLists( 1 );
-		glNewList(stationaryTwo, GL_COMPILE);
-		glShadeModel( GL_SMOOTH );
 
-		glPushMatrix();
-			MjbSphere(5, 50, 50);
-		glPopMatrix();
-	glEndList();
+	glEndList( );
 
-		 
+	randomList = glGenLists( 1 );
+	glNewList( randomList, GL_COMPILE );
 
-	 //create the axes:
+	glEndList( );
+	// create the axes:
 
-    AxesList = glGenLists( 1 );
+	AxesList = glGenLists( 1 );
 	glNewList( AxesList, GL_COMPILE );
 		glLineWidth( AXES_WIDTH );
-			Axes( 10 );
-		glLineWidth( 10. );
+			Axes( 1.5 );
+		glLineWidth( 1. );
 	glEndList( );
 }
 
@@ -855,39 +861,6 @@ Keyboard( unsigned char c, int x, int y )
 
 	switch( c )
 	{
-		case 'f':
-			if( FREEZE == 1.) {
-				FREEZE = 0.;
-			}
-			else{
-                TIMEATFREEZE =  glutGet(GLUT_ELAPSED_TIME);
-
-				FREEZE = 1.;
-			}
-
-			break;
-
-		case 'F':
-			FRAGMENT = 1.;
-			VERTEX = 0.;
-			break;
-
-		case 'B':
-			VERTEX = 1.;
-			FRAGMENT = 1.;
-			break;
-
-		case 'V':
-			VERTEX = 1.;
-			FRAGMENT = 0.;
-			break;
-
-		case 'N':
-			if( PATTERN == 1.)
-				PATTERN = 0.;
-			else
-				PATTERN = 1.;
-			break;
 		case 'o':
 		case 'O':
 			WhichProjection = ORTHO;
@@ -1249,3 +1222,4 @@ HsvRgb( float hsv[3], float rgb[3] )
 	rgb[1] = g;
 	rgb[2] = b;
 }
+

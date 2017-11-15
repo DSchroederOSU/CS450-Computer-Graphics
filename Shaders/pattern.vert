@@ -27,7 +27,7 @@ main( )
 
 
     new_vertex.x = gl_Vertex.x + (sin(dot(gl_Vertex.xy ,vec2(12.9898,78.233)))*(uniformTime+0.1)*3.*vertex_flag) ;
-    new_vertex.y = gl_Vertex.y + (gl_Vertex.y * sin(0.1 + uniformTime)*3.*vertex_flag) ;
+    new_vertex.y = gl_Vertex.y + (cos(dot(gl_Vertex.xy ,vec2(12.9898,78.233)))*(uniformTime+0.1)*3.*vertex_flag);
     new_vertex.z = gl_Vertex.z + (gl_Vertex.z * tan(uniformTime)*vertex_flag) ;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(new_vertex, 1);
 }
