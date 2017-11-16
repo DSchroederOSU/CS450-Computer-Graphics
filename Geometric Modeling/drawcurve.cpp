@@ -87,12 +87,31 @@ RotateZ( Point *p, float deg, float xc, float yc, float zc )
 }
 
 void
+rotateCurveY(float time, Curve c, int offset){
+    time = time * 20;
+    RotateY( &c.p1, offset + time, 0, 1, 0);
+    RotateY( &c.p2, offset + time, 0, 1, 0);
+    RotateY( &c.p3, offset + time, 0, 1, 0);
+    RotateY( &c.p0, offset + time, 0, 1, 0);
+    makeCurve(c, 20);
+}
+
+void
 rotateCurveZ(float time, Curve c, int offset){
-    float start = (offset+(sin(time)+0.5))/2;
-    printf("%f\n", start);
-    RotateZ( &c.p1, offset+(sin(time)+0.5)*20, 0, (sin(time)), (-1.)*start + offset+(sin(time)+0.5));
-    RotateZ( &c.p2, offset+(sin(time)+0.5)*20, 0, (sin(time)), (-1.)*start + offset+(sin(time)+0.5));
-    RotateZ( &c.p3, offset+(sin(time)+0.5)*20, 0, (sin(time)), (-1.)*start + offset+(sin(time)+0.5));
-    RotateZ( &c.p0, offset+(sin(time)+0.5)*20, 0, (sin(time)), (-1.)*start + offset+(sin(time)+0.5));
+    time = time * 20;
+    RotateZ( &c.p1, offset + time, 0, 0, 1);
+    RotateZ( &c.p2, offset + time, 0, 0, 1);
+    RotateZ( &c.p3, offset + time, 0, 0, 1);
+    RotateZ( &c.p0, offset + time, 0, 0, 1);
+    makeCurve(c, 20);
+}
+
+void
+rotateCurveX(float time, Curve c, int offset){
+    time = time * 20;
+    RotateX( &c.p1, offset + time, 1, 0, 0);
+    RotateX( &c.p2, offset + time, 1, 0, 0);
+    RotateX( &c.p3, offset + time, 1, 0, 0);
+    RotateX( &c.p0, offset + time, 1, 0, 0);
     makeCurve(c, 20);
 }

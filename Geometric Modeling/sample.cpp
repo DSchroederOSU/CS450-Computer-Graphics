@@ -219,9 +219,12 @@ void	HsvRgb( float[3], float [3] );
 //PROGRAM 6 GEOMETRIC MODELING
 //---------------------------------------------------
 
-#define TIME_VARIABLE 10000
+#define TIME_VARIABLE 1000
 float Time;
-GLuint	randomList;
+GLuint	circleList;
+float lookVector[] = {0., 0., -14};
+float lookatVector[] = {0., 0., 0.};
+
 // main program:
 
 int
@@ -288,8 +291,7 @@ Animate( )
 	Time = (float)ms  /  (float)TIME_VARIABLE;        // [ 0., 1. )
 	// force a call to Display( ) next time it is convenient:
 
-	Time = (int)(Time*360)* M_PI / 180.0;
-
+	Time =  (int)(Time*360)* M_PI / 180.0;
 
 	glutPostRedisplay( );
 }
@@ -358,7 +360,9 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( 0., 6., -12.,     0., 0., 0.,     0., 1., 0. );
+	gluLookAt( lookVector[0], lookVector[1],
+			   lookVector[2], lookatVector[0], lookatVector[1], lookatVector[2],
+			   0., 1., 0. );
 
 
 	// rotate the scene:
@@ -406,76 +410,121 @@ Display( )
 
 
 	// draw the current object:
-	Point a;
-	a.x0 = 0;
-	a.y0 = 0;
-	a.z0 = 0;
+	glPushMatrix( );
+		Point a;
+		a.x0 = a.x = 2 - (0.5)*sin(Time);
+		a.y0 = a.y = 0;
+		a.z0 = a.z = 0;
 
-	Point b;
-	b.x0 = 4;
-	b.y0 = 3;
-	b.z0 = 0;
+		Point b;
+		b.x0 = b.x = 1.5;
+		b.y0 = b.y = 0.7;
+		b.z0 = b.z = 0;
 
-	Point c;
-	c.x0 = 4;
-	c.y0 = 0;
-	c.z0 = 0;
+		Point c;
+		c.x0 = c.x = 0.5;
+		c.y0 = c.y = 0.7;
+		c.z0 = c.z = 0;
 
-	Point d;
-	d.x0 = 0;
-	d.y0 = 0;
-	d.z0 = 0;
+		Point d;
+		d.x0 = d.x = 0;
+		d.y0 = d.y = 0;
+		d.z0 = d.z = 0;
 
-	Curve petal1;
-	petal1.p0 = a;
-	petal1.p1 = b;
-	petal1.p2 = c;
-	petal1.p3 = d;
-	petal1.r = 1;
-	petal1.g = .3;
-	petal1.b = 0.2;
-	Curve petal2 = petal1;
-	Curve petal3 = petal1;
-	Curve petal4 = petal1;
-	Curve petal5  = petal1;
-	Curve petal6  = petal1;
+		Point a1;
+		a1.x0 = a1.x = -2 + (0.5)*sin(Time);
+		a1.y0 = a1.y = 0;
+		a1.z0 = a1.z = 0;
+
+		Point b1;
+		b1.x0 = b1.x = -1.5;
+		b1.y0 = b1.y = 0.7;
+		b1.z0 = b1.z = 0;
+
+		Point c1;
+		c1.x0 = c1.x = -0.5;
+		c1.y0 = c1.y = 0.7;
+		c1.z0 = c1.z = 0;
+
+		Point d1;
+		d1.x0 = d1.x = 0;
+		d1.y0 = d1.y = 0;
+		d1.z0 = d1.z = 0;
+
+		Curve wing1;
+		wing1.p0 = a;
+		wing1.p1 = b;
+		wing1.p2 = c;
+		wing1.p3 = d;
+		wing1.r = 1;
+		wing1.g = .3;
+		wing1.b = 0.2;
+
+		Curve wing2;
+		wing2.p0 = a1;
+		wing2.p1 = b1;
+		wing2.p2 = c1;
+		wing2.p3 = d1;
+		wing2.r = 1;
+		wing2.g = .3;
+		wing2.b = 0.2;
+
+		int i;
+		makeCurve(wing1, 20);
+
+		for(i = -15; i < 15; i++){
+			rotateCurveX(0, wing1, 2*i);
+		}
+
+		makeCurve(wing2, 20);
+		for(i = -15; i < 15; i++){
+			rotateCurveX(0, wing2, 2*i);
+		}
+	glPopMatrix( );
+
+	glPushMatrix( );
+		glTranslatef(0., 3., 0.);
+
+		makeCurve(wing1, 20);
+
+		for(i = -15; i < 15; i++){
+			rotateCurveX(0, wing1, 2*i);
+		}
+
+		makeCurve(wing2, 20);
+		for(i = -15; i < 15; i++){
+			rotateCurveX(0, wing2, 2*i);
+		}
+	glPopMatrix( );
+
+
 	/*
-	rotateCurveZ(Time, petal1, 0);
-	rotateCurveZ(Time, petal2, 60);
-	rotateCurveZ(Time, petal3, 120);
-	rotateCurveZ(Time, petal4, 180);
-	rotateCurveZ(Time, petal5, 240);
-	rotateCurveZ(Time, petal6, 300);
-	*/
-
-	int i;
-
 	glPushMatrix();
-		printf("%f\n", -1.+rand()%3);
+
 		glRotatef( rand()%360 + Time * 180.0 / M_PI,   -1.+rand()%3, -1.+ rand()%3, -1.+ rand()%3  );
 
 
 		for (i = 0; i < 100; i ++ ){
 
 			Point a;
-			a.x0 = a.x = 0. + (rand()%6)+ (-3);
-			a.y0 = a.y = 0. + (rand()%6)+ (-3);
-			a.z0 = a.z = 0. + (rand()%6)+ (-3);
+			a.x0 = a.x = 0. + (rand()%3)+ (-1.5);
+			a.y0 = a.y = 0. + (rand()%3)+ (-1.5);
+			a.z0 = a.z = 0. + (rand()%3)+ (-1.5);
 
 			Point b;
-			b.x0 = b.x = 0. + (rand()%6)+ (-3);
-			b.y0 = b.y = 0. + (rand()%6)+ (-3);
-			b.z0 = b.z = 0. + (rand()%6)+ (-3);
+			b.x0 = b.x = 0. + (rand()%3)+ (-1.5);
+			b.y0 = b.y = 0. + (rand()%3)+ (-1.5);
+			b.z0 = b.z = 0. + (rand()%3)+ (-1.5);
 
 			Point c;
-			c.x0 = c.x = 0. + (rand()%6)+ (-3);
-			c.y0 = c.y = 0. + (rand()%6)+ (-3);
-			c.z0 = c.z = 0. + (rand()%6)+ (-3);
+			c.x0 = c.x = 0. + (rand()%3)+ (-1.5);
+			c.y0 = c.y = 0. + (rand()%3)+ (-1.5);
+			c.z0 = c.z = 0. + (rand()%3)+ (-1.5);
 
 			Point d;
-			d.x0 = d.x = 0. + (rand()%6)+ (-3);
-			d.y0 = d.y = 0. + (rand()%6)+ (-3);
-			d.z0 = d.z = 0. + (rand()%6)+ (-3);
+			d.x0 = d.x = 0. + (rand()%3)+ (-1.5);
+			d.y0 = d.y = 0. + (rand()%3)+ (-1.5);
+			d.z0 = d.z = 0. + (rand()%3)+ (-1.5);
 
 			float t = Time * 180.0 / M_PI;
 			float hsv[3] = {(i*20.)+t, 1., 1.};
@@ -492,6 +541,7 @@ Display( )
 			makeCurve(curve, 20);
 		}
 	glPopMatrix();
+	*/
 
 	if( DepthFightingOn != 0 )
 	{
@@ -500,7 +550,9 @@ Display( )
 			glCallList( BoxList );
 		glPopMatrix( );
 	}
+	/*
 
+	*/
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
@@ -836,9 +888,23 @@ InitLists( )
 
 	glEndList( );
 
-	randomList = glGenLists( 1 );
-	glNewList( randomList, GL_COMPILE );
+	circleList = glGenLists( 1 );
+	glNewList( circleList, GL_COMPILE );
+		float x,y;
+		float radius = 6.;
+		glBegin(GL_LINES);
+		glColor3f(1.0f,0.0f,0.0f);
 
+		x = (float)radius * cos(359 * M_PI/180.0f);
+		y = (float)radius * sin(359 * M_PI/180.0f);
+		for(int j = 0; j < 360; j++)
+		{
+			glVertex2f(x,y);
+			x = (float)radius * cos(j * M_PI/180.0f);
+			y = (float)radius * sin(j * M_PI/180.0f);
+			glVertex2f(x,y);
+		}
+		glEnd();
 	glEndList( );
 	// create the axes:
 
@@ -870,7 +936,25 @@ Keyboard( unsigned char c, int x, int y )
 		case 'P':
 			WhichProjection = PERSP;
 			break;
+		case 'w':
+		case 'W':
+			lookVector[2]++;
+			lookatVector[2]++;
+			break;
+		case 'a':
+		case 'A':
+			lookatVector[0]++;
+			break;
+		case 's':
+		case 'S':
+			lookVector[2]--;
+			lookatVector[2]--;
+			break;
+		case 'd':
+		case 'D':
+			lookatVector[0]--;
 
+			break;
 		case 'q':
 		case 'Q':
 		case ESCAPE:
@@ -938,7 +1022,7 @@ MouseButton( int button, int state, int x, int y )
 void
 MouseMotion( int x, int y )
 {
-	if( DebugOn != 0 )
+	if( DebugOn != 1 )
 		fprintf( stderr, "MouseMotion: %d, %d\n", x, y );
 
 
@@ -950,7 +1034,8 @@ MouseMotion( int x, int y )
 		Xrot += ( ANGFACT*dy );
 		Yrot += ( ANGFACT*dx );
 	}
-
+	printf("%f\n", Xrot);
+	printf("%f\n", Yrot);
 
 	if( ( ActiveButton & MIDDLE ) != 0 )
 	{
