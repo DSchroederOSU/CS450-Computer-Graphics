@@ -400,7 +400,7 @@ Display( )
 	if( AxesOn != 0 )
 	{
 		glColor3fv( &Colors[WhichColor][0] );
-		glCallList( AxesList );
+		//glCallList( AxesList );
 	}
 
 
