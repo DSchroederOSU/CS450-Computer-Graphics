@@ -34,7 +34,7 @@ InitGraphics( )
 	// do this *after* opening the window and init'ing glew:
 
 	Pattern = new GLSLProgram( );
-	bool valid = Pattern->Create( "pattern.vert",  "pattern.frag" );
+	bool valid = Pattern->Create( "building.vert",  "building.frag" );
 	if( ! valid )
 	{
 		fprintf( stderr, "Shader cannot be created!\n" );

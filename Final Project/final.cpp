@@ -11,10 +11,16 @@
 #include "glew.h"
 #endif
 
+
+#include <OpenGL/gl3.h>
+
+#include "glslprogram.h"
 #include <OpenGL/gl.h>
+
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #include "bmp.cpp"
+#include "loadTGA.cpp"
 #include "mjbsphere.cpp"
 //	This is a sample OpenGL / GLUT program
 //
@@ -159,6 +165,14 @@ const GLfloat Colors[ ][3] =
 	{ 0., 0., 0. },		// black
 };
 
+const GLfloat NeutralColors[ ][3] =
+		{
+				{ 0.71484375, 0.6484375, 0.67578125},	// purple
+				{ 0.7890625, 0.69921875, 0.53125 },		// gold/bronze
+				{ 0.70703125, 0.6953125, 0.5703125 },	// green
+				{ 0.65625, 0.67578125, 0.703125 },		// blue
+				{ 0.85546875, 0.83984375, 0.796875 },	// silver
+		};
 
 // fog parameters:
 
@@ -188,12 +202,15 @@ float	Xrot, Yrot;				// rotation angles in degrees
 
 
 // function prototypes:
+void    drawHemisphere( float radius, int lats, int longs );
+void    drawStrip(int length );
 void 	moveForward( float camera[3], float lookat[3] );
 void 	moveBackward( float camera[3], float lookat[3] );
 void 	drawGround( );
+void 	drawSky( );
 float 	Unit( float vin[3], float vout[3] );
 float	Dot( float v1[3], float v2[3]);
-void 	drawBuilding(float width, float height );
+void 	drawBuilding(float width, float height , const GLfloat window[3]);
 void	Animate( );
 void	Display( );
 void	DoAxesMenu( int );
@@ -236,8 +253,24 @@ int drawControlLines = 1;
 int showHead = 1;
 int showCluster = 0;
 int lookatAngle = 90;
+
+//Textures//
 unsigned char *texture;
 int texture_w, texture_h;
+unsigned char *texture2;
+int texture2_w, texture2_h;
+
+
+//Shaders//
+GLSLProgram *Building;
+GLSLProgram *Sky;
+float pat = 0;
+float FRAGMENT = 1.;
+float FREEZE = 1.;
+float PATTERN = 1.;
+const float DEG2RAD = 3.14159/180;
+
+
 // main program:
 
 
@@ -419,10 +452,52 @@ Display( )
 		glCallList( AxesList );
 	}
 
+	glEnable( GL_NORMALIZE );
 
 	// since we are using glScalef( ), be sure normals get unitized:
 
-	glEnable( GL_NORMALIZE );
+
+    Building->Use();
+    Building->SetUniformVariable((char *) "uniformTime", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
+
+    Building->SetUniformVariable((char *) "uPat", (float) (pat));
+    Building->SetUniformVariable((char *) "uKa", (float) 0.25);
+    Building->SetUniformVariable((char *) "uKd", (float) .5);
+    Building->SetUniformVariable((char *) "uKs", (float) .25);
+    Building->SetUniformVariable((char *) "uShininess", (float) 1);
+    Building->SetUniformVariable((char *) "uS0", 1);
+    Building->SetUniformVariable((char *) "uT0", 1);
+    Building->SetUniformVariable((char *) "uSize", (float) 1);
+		// draw the current object:
+    Building->Use(0);
+
+
+
+    /*
+	glPushMatrix( );
+		glTranslatef( 5., 0., 0. );
+		drawBuilding(3., 8., NeutralColors[1]);
+	glPopMatrix( );
+
+	glPushMatrix( );
+		glTranslatef( 0., 0., 5. );
+		drawBuilding(3., 12., NeutralColors[3]);
+	glPopMatrix( );
+    glPushMatrix( );
+        glTranslatef( -5., 0., 0. );
+        drawBuilding(3., 10., NeutralColors[4]);
+    glPopMatrix( );
+    glPushMatrix( );
+        glTranslatef( 5., 0., 5. );
+        drawBuilding(3., 6., NeutralColors[0]);
+    glPopMatrix( );
+    glPushMatrix( );
+        glTranslatef( 0., 0., -10. );
+        drawBuilding(3., 16., NeutralColors[2]);
+    glPopMatrix( );
+    */
+
+
 
 	glEnable(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -430,33 +505,18 @@ Display( )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-
-	// Project 3 - Draw object
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_w, texture_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture2_w, texture2_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture2);
+    glDisable(GL_TEXTURE_2D);
 
-	glPushMatrix( );
-		glTranslatef( 5., 0., 0. );
-		drawBuilding(3., 8.);
+    glPushMatrix( );
+		drawSky( );
 	glPopMatrix( );
-	glDisable(GL_TEXTURE_2D);
+
+
 	drawGround( );
 	/*
-	glPushMatrix( );
-		glTranslatef( -5., 0., 0. );
-		drawBuilding(3., 8.);
-	glPopMatrix( );
 
-	glPushMatrix( );
-		glTranslatef( 0., 0., 5. );
-		drawBuilding(3., 8.);
-	glPopMatrix( );
-
-	glPushMatrix( );
-		glTranslatef( 0., 0., -5. );
-		drawBuilding(3., 8.);
-	glPopMatrix( );
 	*/
 	if( DepthFightingOn != 0 )
 	{
@@ -471,7 +531,7 @@ Display( )
 
 	// draw some gratuitous text that just rotates on top of the scene:
 
-	// draw some gratuitous text that is fixed on the screen:
+	/* draw some gratuitous text that is fixed on the screen:
 	glDisable( GL_DEPTH_TEST );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity( );
@@ -480,6 +540,7 @@ Display( )
 	glLoadIdentity( );
 	glColor3f( 1., 1., 1. );
 	DoRasterString( 28., 25., 0., "FLOCK OF SEAGULLS" );
+	 */
 	// the projection matrix is reset to define a scene whose
 	// world coordinate system goes from 0-100 in each axis
 	//
@@ -784,7 +845,43 @@ InitGraphics( )
 		fprintf( stderr, "GLEW initialized OK\n" );
 	fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
+
+	//init texture
 	texture = BmpToTexture("stone_wall.bmp", &texture_w, &texture_h);
+	texture2 = BmpToTexture("sky.bmp", &texture2_w, &texture2_h);
+
+
+	//init shader
+	//init shaders
+	Building = new GLSLProgram( );
+	bool buildingValid = Building->GLSLProgram::Create( "building.vert",  "building.frag" );
+	if( ! buildingValid )
+	{
+		fprintf( stderr, "Shader cannot be created!\n" );
+		DoMainMenu( QUIT );
+	}
+	else
+	{
+		fprintf( stderr, "Shader created.\n" );
+	}
+	Building->GLSLProgram::SetVerbose( false );
+
+
+    drawStrip(5);
+
+	Sky = new GLSLProgram( );
+	bool skyValid = Sky->GLSLProgram::Create( "sky.vert",  "sky.frag" );
+	if( ! skyValid )
+	{
+		fprintf( stderr, "Shader cannot be created!\n" );
+		DoMainMenu( QUIT );
+	}
+	else
+	{
+		fprintf( stderr, "Shader created.\n" );
+	}
+	Sky->GLSLProgram::SetVerbose( false );
+
 }
 
 
@@ -794,48 +891,45 @@ InitGraphics( )
 //  with a call to glCallList( )
 
 void
-InitLists( )
-{
-	float dx = BOXSIZE / 2.f;
-	float dy = BOXSIZE / 2.f;
-	float dz = BOXSIZE / 2.f;
-	glutSetWindow( MainWindow );
+InitLists( ) {
+    float dx = BOXSIZE / 2.f;
+    float dy = BOXSIZE / 2.f;
+    float dz = BOXSIZE / 2.f;
+    glutSetWindow(MainWindow);
 
-	// create the object:
+    // create the object:
 
-	BoxList = glGenLists( 1 );
-	glNewList( BoxList, GL_COMPILE );
-
+    BoxList = glGenLists(1);
+    glNewList(BoxList, GL_COMPILE);
 
 
-	glEndList( );
+    glEndList();
 
-	circleList = glGenLists( 1 );
-	glNewList( circleList, GL_COMPILE );
-		float x,y;
-		float radius = 6.;
-		glBegin(GL_LINES);
-		glColor3f(1.0f,0.0f,0.0f);
+    circleList = glGenLists(1);
+    glNewList(circleList, GL_COMPILE);
+    float x, y;
+    float radius = 6.;
+    glBegin(GL_LINES);
+    glColor3f(1.0f, 0.0f, 0.0f);
 
-		x = (float)radius * cos(359 * M_PI/180.0f);
-		y = (float)radius * sin(359 * M_PI/180.0f);
-		for(int j = 0; j < 360; j++)
-		{
-			glVertex2f(x,y);
-			x = (float)radius * cos(j * M_PI/180.0f);
-			y = (float)radius * sin(j * M_PI/180.0f);
-			glVertex2f(x,y);
-		}
-		glEnd();
-	glEndList( );
-	// create the axes:
+    x = (float) radius * cos(359 * M_PI / 180.0f);
+    y = (float) radius * sin(359 * M_PI / 180.0f);
+    for (int j = 0; j < 360; j++) {
+        glVertex2f(x, y);
+        x = (float) radius * cos(j * M_PI / 180.0f);
+        y = (float) radius * sin(j * M_PI / 180.0f);
+        glVertex2f(x, y);
+    }
+    glEnd();
+    glEndList();
+    // create the axes:
 
-	AxesList = glGenLists( 1 );
-	glNewList( AxesList, GL_COMPILE );
-		glLineWidth( AXES_WIDTH );
-			Axes( 1.5 );
-		glLineWidth( 1. );
-	glEndList( );
+    AxesList = glGenLists(1);
+    glNewList(AxesList, GL_COMPILE);
+    glLineWidth(AXES_WIDTH);
+    Axes(1.5);
+    glLineWidth(1.);
+    glEndList();
 }
 
 
@@ -1275,8 +1369,13 @@ HsvRgb( float hsv[3], float rgb[3] )
 }
 
 void
-drawBuilding(float width, float height ){
+drawBuilding(float width, float height , const GLfloat window[3]){
 
+	Building->SetUniformVariable((char *) "r", (float) window[0]);
+	Building->SetUniformVariable((char *) "g", (float) window[1]);
+	Building->SetUniformVariable((char *) "b", (float) window[2]);
+	Building->SetUniformVariable((char *) "height", (float) height );
+	Building->SetUniformVariable((char *) "width", (float) width );
 	float y = height;
 	float x = width/2;
 	float z = width/2;
@@ -1290,11 +1389,11 @@ drawBuilding(float width, float height ){
 				glNormal3f( 0., 0.,  1. );
 				glTexCoord2f( 0, 0 );
 				glVertex3f( -x, 0,  z );
-				glTexCoord2f( 0, 16 );
+				glTexCoord2f( 0, 24 );
 				glVertex3f( -x, y,  z );
-				glTexCoord2f( 8, 16 );
+				glTexCoord2f( 12, 24 );
 				glVertex3f(  x,  y,  z );
-				glTexCoord2f( 8, 0 );
+				glTexCoord2f(12, 0 );
 				glVertex3f( x,  0,  z );
 			glEnd( );
 		glPopMatrix( );
@@ -1377,20 +1476,108 @@ moveBackward( float camera[3], float lookat[3] ){
 
 }
 
+
 void drawGround( ){
 	glPushMatrix( );
 
 		glBegin( GL_QUADS );
-			glColor3f( 0., 1., 0. );
+			glColor3f( 0.09765625, 0.43359375, 0.23828125 );
 			glNormal3f( 0., 0.,  1. );
 			glTexCoord2f( 0, 0 );
 			glVertex3f( -100, 0, 100);
-			glTexCoord2f( 0, 16 );
+			glTexCoord2f( 0, 24 );
 			glVertex3f( 100, 0, 100);
-			glTexCoord2f( 8, 16 );
+			glTexCoord2f( 12, 24 );
 			glVertex3f( 100, 0, -100);
-			glTexCoord2f( 8, 0 );
+			glTexCoord2f( 12, 0 );
 			glVertex3f( -100, 0, -100);
 		glEnd( );
 	glPopMatrix( );
+}
+void drawSky( ){
+    Sky->Use();
+    Sky->SetUniformVariable((char *) "uniformTime", (float) 1.);
+
+    Sky->SetUniformVariable((char *) "uPat", (float) (pat));
+    Sky->SetUniformVariable((char *) "uKa", (float) 0.25);
+    Sky->SetUniformVariable((char *) "uKd", (float) .5);
+    Sky->SetUniformVariable((char *) "uKs", (float) .25);
+    Sky->SetUniformVariable((char *) "uShininess", (float) 1);
+    Sky->SetUniformVariable((char *) "uS0", 1);
+    Sky->SetUniformVariable((char *) "uT0", 1);
+    Sky->SetUniformVariable((char *) "uSize", (float) 1);
+    // draw the current object:
+
+    glPushMatrix( );
+    //glRotatef(90, 1, 0, 0);
+
+    //glScalef(20, 20, 20);
+
+    drawHemisphere(5, 180, 180);
+
+    glPopMatrix( );
+    Sky->Use(0);
+}
+
+void drawStrip(int length ){
+    int i;
+    for ( i = 0; i < length; i++){
+        //build road
+        glPushMatrix();
+        glTranslatef(i, 0.01, 0);
+        glBegin( GL_QUADS );
+            glColor3f( 0., 0., 0. );
+            glNormal3f( 0., 1.,  0. );
+            glTexCoord2f( 0, 0 );
+            glVertex3f( 0, 0, 0);
+            glTexCoord2f( 0, 1 );
+            glVertex3f( 0, 0, 1);
+            glTexCoord2f( 1, 1 );
+            glVertex3f( 1, 0, 1);
+            glTexCoord2f( 1, 0 );
+            glVertex3f( 1, 0, 0);
+        glEnd( );
+        int randLeft = rand()%2;
+        printf("%d\n", randLeft);
+        glPopMatrix();
+
+    }
+}
+
+void drawHemisphere( float radius, int lats, int longs ) {
+    int i, j;
+    int halfLats = lats / 2;
+    for(i = 0; i <= halfLats; i++)
+    {
+        double lat0 = M_PI * (-0.5 + (double) (i - 1) / lats);
+        double z0 = sin(lat0);
+        double zr0 = cos(lat0);
+
+        double lat1 = M_PI * (-0.5 + (double) i / lats);
+        double z1 = sin(lat1);
+        double zr1 = cos(lat1);
+
+        glBegin(GL_QUAD_STRIP);
+        for(j = 0; j <= longs; j++)
+        {
+            double lng = 2 * M_PI * (double) (j - 1) / longs;
+            double x = cos(lng);
+            double y = sin(lng);
+
+            double s1, s2, t;
+            s1 = ((double) i) / halfLats;
+            s2 = ((double) i + 1) / halfLats;
+            t = ((double) j) / longs;
+
+            glTexCoord2d(s1, t);
+            glNormal3d(x * zr0, y * zr0, z0);
+            glVertex3d(x * zr0, y * zr0, z0);
+
+            glTexCoord2d(s2, t);
+            glNormal3d(x * zr1, y * zr1, z1);
+            glVertex3d(x * zr1, y * zr1, z1);
+        }
+        glEnd();
+    }
+
 }

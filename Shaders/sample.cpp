@@ -795,7 +795,7 @@ InitGraphics( )
 
 	//init shaders
 	Pattern = new GLSLProgram( );
-	bool valid = Pattern->GLSLProgram::Create( "pattern.vert",  "pattern.frag" );
+	bool valid = Pattern->GLSLProgram::Create( "building.vert",  "building.frag" );
 	if( ! valid )
 	{
 		fprintf( stderr, "Shader cannot be created!\n" );

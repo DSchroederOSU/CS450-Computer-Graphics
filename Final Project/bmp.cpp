@@ -163,6 +163,7 @@ BmpToTexture( char *filename, int *width, int *height )
 
     *width = nums;
     *height = numt;
+
     return texture;
 }
 
