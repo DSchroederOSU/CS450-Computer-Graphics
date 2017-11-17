@@ -11,7 +11,7 @@ const float PI =        3.14159265;
 const float AMP =       0.2;
 const float W =         2.;
 
-const vec3 LIGHTPOSITION = vec3( 0., 5., 5. );
+const vec3 LIGHTPOSITION = vec3( 0., 5., -5. );
 void
 main( )
 {
