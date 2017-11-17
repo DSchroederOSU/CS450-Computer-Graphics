@@ -14,7 +14,7 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include "drawcurve.cpp"
+#include "bmp.cpp"
 #include "mjbsphere.cpp"
 //	This is a sample OpenGL / GLUT program
 //
@@ -188,8 +188,12 @@ float	Xrot, Yrot;				// rotation angles in degrees
 
 
 // function prototypes:
-void 	DrawControlPoints( Curve );
-void	DrawSeagull( );
+void 	moveForward( float camera[3], float lookat[3] );
+void 	moveBackward( float camera[3], float lookat[3] );
+
+float 	Unit( float vin[3], float vout[3] );
+float	Dot( float v1[3], float v2[3]);
+void 	drawBuilding(float width, float height );
 void	Animate( );
 void	Display( );
 void	DoAxesMenu( int );
@@ -218,20 +222,26 @@ void	HsvRgb( float[3], float [3] );
 
 
 //---------------------------------------------------
-//PROGRAM 6 GEOMETRIC MODELING
+//Final Program
 //---------------------------------------------------
 
 #define TIME_VARIABLE 1000
 float Time;
 GLuint	circleList;
-float lookVector[] = {0., 0., -10};
-float lookatVector[] = {0., 0., 0.};
+float cameraVector[] = {0., 1., -2};
+float lookatVector[] = {0., 1., 0.};
 int freeze = 0;
 int drawControlPoints = 1;
 int drawControlLines = 1;
 int showHead = 1;
 int showCluster = 0;
+int lookatAngle = 90;
+unsigned char *texture;
+int texture_w, texture_h;
 // main program:
+
+
+
 
 int
 main( int argc, char *argv[ ] )
@@ -366,15 +376,15 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( lookVector[0], lookVector[1],
-			   lookVector[2], lookatVector[0], lookatVector[1], lookatVector[2],
-			   0., 1., 0. );
+	gluLookAt( cameraVector[0], cameraVector[1], cameraVector[2],
+			   lookatVector[0], lookatVector[1], lookatVector[2],
+			   0., 1., 0.);
 
 
 	// rotate the scene:
 
-	glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-	glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+	//glRotatef( (GLfloat)Yrot, );
+	//glRotatef( (GLfloat)Xrot, cameraVector[0], 0, 0);
 
 
 	// uniformly scale the scene:
@@ -406,7 +416,7 @@ Display( )
 	if( AxesOn != 0 )
 	{
 		glColor3fv( &Colors[WhichColor][0] );
-		//glCallList( AxesList );
+		glCallList( AxesList );
 	}
 
 
@@ -414,68 +424,38 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
+	glEnable(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	// draw the current object:
+
+	// Project 3 - Draw object
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_w, texture_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+
 	glPushMatrix( );
-		glScalef(3, 3, 3);
-		DrawSeagull();
+		glTranslatef( 5., 0., 0. );
+		drawBuilding(3., 8.);
 	glPopMatrix( );
-
 	/*
 	glPushMatrix( );
-		glTranslatef(2.5, 1.5, 1);
-		DrawSeagull();
+		glTranslatef( -5., 0., 0. );
+		drawBuilding(3., 8.);
 	glPopMatrix( );
+
 	glPushMatrix( );
-		glTranslatef(-2.5, 1.5, 1);
-		DrawSeagull();
+		glTranslatef( 0., 0., 5. );
+		drawBuilding(3., 8.);
+	glPopMatrix( );
+
+	glPushMatrix( );
+		glTranslatef( 0., 0., -5. );
+		drawBuilding(3., 8.);
 	glPopMatrix( );
 	*/
-	if (showCluster == 1) {
-		glPushMatrix();
-		int i;
-		glRotatef(rand() % 360 + Time * 180.0 / M_PI, -1. + rand() % 3, -1. + rand() % 3, -1. + rand() % 3);
-
-
-		for (i = 0; i < 100; i++) {
-
-			Point a;
-			a.x0 = a.x = 0. + (rand() % 3) + (-1.5);
-			a.y0 = a.y = 0. + (rand() % 3) + (-1.5);
-			a.z0 = a.z = 0. + (rand() % 3) + (-1.5);
-
-			Point b;
-			b.x0 = b.x = 0. + (rand() % 3) + (-1.5);
-			b.y0 = b.y = 0. + (rand() % 3) + (-1.5);
-			b.z0 = b.z = 0. + (rand() % 3) + (-1.5);
-
-			Point c;
-			c.x0 = c.x = 0. + (rand() % 3) + (-1.5);
-			c.y0 = c.y = 0. + (rand() % 3) + (-1.5);
-			c.z0 = c.z = 0. + (rand() % 3) + (-1.5);
-
-			Point d;
-			d.x0 = d.x = 0. + (rand() % 3) + (-1.5);
-			d.y0 = d.y = 0. + (rand() % 3) + (-1.5);
-			d.z0 = d.z = 0. + (rand() % 3) + (-1.5);
-
-			float t = Time * 180.0 / M_PI;
-			float hsv[3] = {(i * 20.) + t, 1., 1.};
-			float rgb[3];
-			HsvRgb(hsv, rgb);
-			Curve curve;
-			curve.p0 = a;
-			curve.p1 = b;
-			curve.p2 = c;
-			curve.p3 = d;
-			curve.r = rgb[0];
-			curve.g = rgb[1];
-			curve.b = rgb[2];
-			makeCurve(curve, 20);
-		}
-		glPopMatrix();
-	}
-
 	if( DepthFightingOn != 0 )
 	{
 		glPushMatrix( );
@@ -802,7 +782,7 @@ InitGraphics( )
 		fprintf( stderr, "GLEW initialized OK\n" );
 	fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
-
+	texture = BmpToTexture("stone_wall.bmp", &texture_w, &texture_h);
 }
 
 
@@ -862,6 +842,9 @@ InitLists( )
 void
 Keyboard( unsigned char c, int x, int y )
 {
+	float looky;
+	float lookx;
+	float a;
 	if( DebugOn != 0 )
 		fprintf( stderr, "Keyboard: '%c' (0x%0x)\n", c, c );
 
@@ -911,24 +894,30 @@ Keyboard( unsigned char c, int x, int y )
 			break;
 		case 'w':
 		case 'W':
-			lookVector[2]++;
-			lookatVector[2]++;
+			moveForward(cameraVector, lookatVector);
+
 			break;
 		case 'a':
 		case 'A':
-			lookatVector[0]++;
+			lookatAngle -= 15;
+			a = lookatAngle * (M_PI/180);
+			lookatVector[0] = cameraVector[0] + cos(a);
+			lookatVector[2] = cameraVector[2] + sin(a);
 			break;
 		case 's':
 		case 'S':
-			lookVector[2]--;
-			lookatVector[2]--;
+
+			moveBackward(cameraVector, lookatVector);
 			break;
 		case 'd':
 		case 'D':
-			lookatVector[0]--;
+			lookatAngle += 15;
+			a = lookatAngle * (M_PI/180);
+
+			lookatVector[0] = cameraVector[0] + cos(a);
+			lookatVector[2] = cameraVector[2] + sin(a);
 			break;
-		case 'q':
-		case 'Q':
+
 		case ESCAPE:
 			DoMainMenu( QUIT );	// will not return here
 			break;				// happy compiler
@@ -986,6 +975,10 @@ MouseButton( int button, int state, int x, int y )
 	{
 		ActiveButton &= ~b;		// clear the proper bit
 	}
+
+	int dx = x - Xmouse;		// change in mouse coords
+	int dy = y - Ymouse;
+
 }
 
 
@@ -1013,7 +1006,7 @@ MouseMotion( int x, int y )
 		Scale += SCLFACT * (float) ( dx - dy );
 
 		// keep object from turning inside-out or disappearing:
-
+		printf("%f\n", Scale);
 		if( Scale < MINSCALE )
 			Scale = MINSCALE;
 	}
@@ -1278,216 +1271,108 @@ HsvRgb( float hsv[3], float rgb[3] )
 	rgb[1] = g;
 	rgb[2] = b;
 }
-void DrawControlPoints(Curve c) {
-	if (drawControlPoints == 1) {
-		glColor3f(0, 1, 0);
-		glPushMatrix();
 
-		glTranslatef(c.p0.x, c.p0.y, c.p0.z);
-		MjbSphere(0.02, 20, 20);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(c.p1.x, c.p1.y, c.p1.z);
-		MjbSphere(0.02, 20, 20);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(c.p2.x, c.p2.y, c.p2.z);
-		MjbSphere(0.02, 20, 20);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(c.p3.x, c.p3.y, c.p3.z);
-		MjbSphere(0.02, 5, 5);
-		glPopMatrix();
-	}
-	if (drawControlLines == 1){
-		glColor3f(1, 1, 0);
-		glBegin(GL_LINE_STRIP);
-		glVertex3f(c.p0.x, c.p0.y, c.p0.z);
-		glVertex3f(c.p1.x, c.p1.y, c.p1.z);
-		glVertex3f(c.p2.x, c.p2.y, c.p2.z);
-		glVertex3f(c.p3.x, c.p3.y, c.p3.z);
+void
+drawBuilding(float width, float height ){
 
-		glEnd();
-	}
-}
-void DrawSeagull(){
-	glPushMatrix();
-	Point a;
-	a.x0 = a.x = 2 - (0.5)*sin(Time);
-	a.y0 = a.y = 0.2 - (0.5)*sin(Time);
-	a.z0 = a.z = 0;
 
-	Point b;
-	b.x0 = b.x = 1.5;
-	b.y0 = b.y = 0.7 - (0.1)*sin(Time);
-	b.z0 = b.z = 0;
+	float y = height;
+	float x = width/2;
+	float z = width/2;
 
-	Point c;
-	c.x0 = c.x = 0.5;
-	c.y0 = c.y = 0.7;
-	c.z0 = c.z = 0;
-
-	Point d;
-	d.x0 = d.x = 0;
-	d.y0 = d.y = 0;
-	d.z0 = d.z = 0;
-
-	Point a1;
-	a1.x0 = a1.x = -2 + (0.5)*sin(Time);
-	a1.y0 = a1.y = 0.2 - (0.5)*sin(Time);
-	a1.z0 = a1.z = 0;
-
-	Point b1;
-	b1.x0 = b1.x = -1.5;
-	b1.y0 = b1.y = 0.7 - (0.1)*sin(Time);
-	b1.z0 = b1.z = 0;
-
-	Point c1;
-	c1.x0 = c1.x = -0.5;
-	c1.y0 = c1.y = 0.7;
-	c1.z0 = c1.z = 0;
-
-	Point d1;
-	d1.x0 = d1.x = 0;
-	d1.y0 = d1.y = 0;
-	d1.z0 = d1.z = 0;
-
-	// body points
-	Point a2;
-	a2.x0 = a2.x = 1.8;
-	a2.y0 = a2.y = 0.3;
-	a2.z0 = a2.z = 0;
-
-	Point b2;
-	b2.x0 = b2.x = 1.5;
-	b2.y0 = b2.y = 0.4;
-	b2.z0 = b2.z = 0;
-
-	Point c2;
-	c2.x0 = c2.x = 0.5;
-	c2.y0 = c2.y = 0.4;
-	c2.z0 = c2.z = 0;
-
-	Point d2;
-	d2.x0 = d2.x = 0;
-	d2.y0 = d2.y = 0;
-	d2.z0 = d2.z = 0;
-
-	Curve wing1;
-	wing1.p0 = a;
-	wing1.p1 = b;
-	wing1.p2 = c;
-	wing1.p3 = d;
-	wing1.r = .66;
-	wing1.g = .66;
-	wing1.b = .66;
-
-	Curve wing2;
-	wing2.p0 = a1;
-	wing2.p1 = b1;
-	wing2.p2 = c1;
-	wing2.p3 = d1;
-	wing2.r = .66;
-	wing2.g = .66;
-	wing2.b = .66;
-
-	Curve body;
-	body.p0 = a2;
-	body.p1 = b2;
-	body.p2 = c2;
-	body.p3 = d2;
-	body.r = .66;
-	body.g = .66;
-	body.b = .66;
 
 	int i;
-	makeCurve(wing1, 20);
-	DrawControlPoints(wing1);
-	for(i = -15; i < 15; i++){
-		wing1 = rotateCurveX(0, wing1, 2*i);
-		if (i%3 == 0)
-			DrawControlPoints(wing1);
-		makeCurve(wing1, 20);
+	for ( i = 0; i < 4; i++){
+		glPushMatrix( );
+			glRotatef(90*i, 0., 1., 0.);
+			glBegin( GL_QUADS );
+				glColor3f( 0., 0., 1. );
+				glNormal3f( 0., 0.,  1. );
+				glTexCoord2f( 0, 0 );
+				glVertex3f( -x, 0,  z );
+				glTexCoord2f( 0, 1 );
+				glVertex3f( -x, y,  z );
+				glTexCoord2f( 1, 1 );
+				glVertex3f(  x,  y,  z );
+				glTexCoord2f( 1, 0 );
+				glVertex3f( x,  0,  z );
+			glEnd( );
+		glPopMatrix( );
 	}
+	/*
+	glColor3f(1., 0., 0.);
+	glPushMatrix( );
+		glBegin( GL_QUADS );
+			glNormal3f( 0., 0.,  1. );
+			glVertex3f( -x, 0,  z );
+			glVertex3f(  x, 0,  z );
+			glVertex3f(  x,  0,  -z );
+			glVertex3f( -x,  0,  -z );
+		glEnd( );
+	glPopMatrix( );
 
-	makeCurve(wing2, 20);
-	for(i = -15; i < 15; i++){
-		wing2 = rotateCurveX(0, wing2, 2*i);
-		if (i%3 == 0)
-			DrawControlPoints(wing2);
-		makeCurve(wing2, 20);
+	glPushMatrix( );
+		glTranslatef(0, height, 0);
+		glBegin( GL_QUADS );
+			glNormal3f( 0., 0.,  1. );
+			glVertex3f( -x, 0,  z );
+			glVertex3f(  x, 0,  z );
+			glVertex3f(  x,  0,  -z );
+			glVertex3f( -x,  0,  -z );
+		glEnd( );
+	glPopMatrix( );
+	*/
+
+}
+
+
+float
+Dot( float v1[3], float v2[3] )
+{
+	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+}
+
+float
+Unit( float vin[3], float vout[3] )
+{
+	float dist = vin[0]*vin[0] + vin[1]*vin[1] + vin[2]*vin[2];
+	if( dist > 0.0 )
+	{
+		dist = sqrt( dist );
+		vout[0] = vin[0] / dist;
+		vout[1] = vin[1] / dist;
+		vout[2] = vin[2] / dist;
 	}
-
-	glTranslatef(0, 0, 1);
-	glRotatef(90, 0., 1., 0.);
-
-	for(i = 0; i < 360; i++){
-		body = rotateCurveX(0, body, 2*i);
-		if (i%20 == 0)
-			DrawControlPoints(body);
-		makeCurve(body, 20);
+	else
+	{
+		vout[0] = vin[0];
+		vout[1] = vin[1];
+		vout[2] = vin[2];
 	}
+	return dist;
+}
 
-	glPopMatrix();
+void
+moveForward( float camera[3], float lookat[3] ){
 
-	// make tail
-	glPushMatrix();
-		glRotatef(5, 1, 0, 0);
-		glTranslatef(0, 0, 0.5);
-		glBegin(GL_TRIANGLE_STRIP);
-			glVertex3f(0, 0, 0);
-			glVertex3f(0.5, 0.2, 0.8);
-			glVertex3f(-0.5, 0.2, 0.8);
-			glVertex3f(-0.5, 0, 0.8);
-			glVertex3f(0, 0, 0);
-			glVertex3f(0.5, 0, 0.8);
-			glVertex3f(0.5, 0.2, 0.8);
-			glVertex3f(-0.5, 0.2, 0.8);
-		glEnd();
-	glPopMatrix();
+	float a = lookatAngle * (M_PI/180);
 
-	if (showHead == 1) {
-		// make head
-		glPushMatrix();
-		// head points
-		Point a3;
-		a3.x0 = a3.x = 0;
-		a3.y0 = a3.y = 0;
-		a3.z0 = a3.z = 0;
+	camera[0] = lookat[0];
+	camera[2] = lookat[2];
+	lookat[0] = camera[0] + cos(a);
+	lookat[2] = camera[2] + sin(a);
+}
+void
+moveBackward( float camera[3], float lookat[3] ){
 
-		Point b3;
-		b3.x0 = b3.x = 0;
-		b3.y0 = b3.y = 0.1;
-		b3.z0 = b3.z = 0.2;
+	float a = lookatAngle * (M_PI/180);
 
-		Point c3;
-		c3.x0 = c3.x = 0;
-		c3.y0 = c3.y = 0.24;
-		c3.z0 = c3.z = 0.32;
+	float dx = lookat[0] - camera[0];
+	float dz = lookat[2] - camera[2];
 
-		Point d3;
-		d3.x0 = d3.x = 0;
-		d3.y0 = d3.y = 0;
-		d3.z0 = d3.z = 0.45;
+	camera[0] -= dx;
+	camera[2] -= dz;
+	lookat[0] = camera[0] + cos(a);
+	lookat[2] = camera[2] + sin(a);
 
-		Curve head;
-		head.p0 = a3;
-		head.p1 = b3;
-		head.p2 = c3;
-		head.p3 = d3;
-		head.r = .66;
-		head.g = .66;
-		head.b = .66;
-		glTranslatef(0, 0.35, -1.05);
-		for (i = 0; i < 360; i++) {
-			head = rotateCurveZ(0, head, 2 * i);
-			if (i % 20 == 0)
-				DrawControlPoints(head);
-			makeCurve(head, 20);
-
-		}
-
-
-		glPopMatrix();
-	}
 }
