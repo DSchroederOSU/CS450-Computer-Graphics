@@ -1,0 +1,105 @@
+\documentclass[10pt, draftclsnofoot, onecolumn]{IEEEtran}
+
+% This might mess up formatting
+\setlength{\parindent}{0pt}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{color}
+\usepackage{url} 
+\usepackage{hyperref}
+%%\usepackage[hyphenbreaks]{breakurl}
+\usepackage{listings}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=8in}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+
+
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+
+\def\name{Daniel Schroeder}
+
+%pull in the necessary preamble matter for pygments output
+\input{pygments.tex}
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {CS450 ``Computer Graphics'' Geometric Modeling},
+  pdftitle = {CS 450 Computer Graphics},
+  pdfsubject = {CS 450 Computer Graphics},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1.5cm}
+
+        \textbf{Program 6 - Geometric Modeling}
+
+        \textbf{Daniel Schroeder}
+        
+        \textbf{schrodan@oregonstate.edu}
+
+        \vspace{1.5cm}
+
+        CS 450 Computer Graphics\\
+        Fall 2017\\
+        14 November 2017\\
+
+        \vspace{1.5cm}
+
+        \textbf{Screen Capture}
+               \begin{figure}[H]
+                   \centering
+                   \begin{subfigure}
+                       \centering
+                       \includegraphics[width=6cm,height=6cm]{image.eps}
+                   \end{subfigure}%
+                   \begin{subfigure}
+                       \centering
+                       \includegraphics[width=6cm,height=6cm]{control.eps}
+                   \end{subfigure}
+               \end{figure}
+               \vspace{1.5cm}
+        \vspace{1.5cm}
+
+        \textbf{Link to Kaltura Video:} 
+        \url{https://media.oregonstate.edu/media/t/0_zsgvpdhc}
+
+    \end{center}
+\end{titlepage}
+
+
+\end{document}
