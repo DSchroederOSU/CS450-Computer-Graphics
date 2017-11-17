@@ -190,7 +190,7 @@ float	Xrot, Yrot;				// rotation angles in degrees
 // function prototypes:
 void 	moveForward( float camera[3], float lookat[3] );
 void 	moveBackward( float camera[3], float lookat[3] );
-
+void 	drawGround( );
 float 	Unit( float vin[3], float vout[3] );
 float	Dot( float v1[3], float v2[3]);
 void 	drawBuilding(float width, float height );
@@ -440,6 +440,8 @@ Display( )
 		glTranslatef( 5., 0., 0. );
 		drawBuilding(3., 8.);
 	glPopMatrix( );
+	glDisable(GL_TEXTURE_2D);
+	drawGround( );
 	/*
 	glPushMatrix( );
 		glTranslatef( -5., 0., 0. );
@@ -1275,11 +1277,9 @@ HsvRgb( float hsv[3], float rgb[3] )
 void
 drawBuilding(float width, float height ){
 
-
 	float y = height;
 	float x = width/2;
 	float z = width/2;
-
 
 	int i;
 	for ( i = 0; i < 4; i++){
@@ -1290,11 +1290,11 @@ drawBuilding(float width, float height ){
 				glNormal3f( 0., 0.,  1. );
 				glTexCoord2f( 0, 0 );
 				glVertex3f( -x, 0,  z );
-				glTexCoord2f( 0, 1 );
+				glTexCoord2f( 0, 16 );
 				glVertex3f( -x, y,  z );
-				glTexCoord2f( 1, 1 );
+				glTexCoord2f( 8, 16 );
 				glVertex3f(  x,  y,  z );
-				glTexCoord2f( 1, 0 );
+				glTexCoord2f( 8, 0 );
 				glVertex3f( x,  0,  z );
 			glEnd( );
 		glPopMatrix( );
@@ -1375,4 +1375,22 @@ moveBackward( float camera[3], float lookat[3] ){
 	lookat[0] = camera[0] + cos(a);
 	lookat[2] = camera[2] + sin(a);
 
+}
+
+void drawGround( ){
+	glPushMatrix( );
+
+		glBegin( GL_QUADS );
+			glColor3f( 0., 1., 0. );
+			glNormal3f( 0., 0.,  1. );
+			glTexCoord2f( 0, 0 );
+			glVertex3f( -100, 0, 100);
+			glTexCoord2f( 0, 16 );
+			glVertex3f( 100, 0, 100);
+			glTexCoord2f( 8, 16 );
+			glVertex3f( 100, 0, -100);
+			glTexCoord2f( 8, 0 );
+			glVertex3f( -100, 0, -100);
+		glEnd( );
+	glPopMatrix( );
 }
