@@ -93,25 +93,23 @@ rotateCurveY(float time, Curve c, int offset){
     RotateY( &c.p2, offset + time, 0, 1, 0);
     RotateY( &c.p3, offset + time, 0, 1, 0);
     RotateY( &c.p0, offset + time, 0, 1, 0);
-    makeCurve(c, 20);
 }
 
-void
+Curve
 rotateCurveZ(float time, Curve c, int offset){
     time = time * 20;
     RotateZ( &c.p1, offset + time, 0, 0, 1);
     RotateZ( &c.p2, offset + time, 0, 0, 1);
     RotateZ( &c.p3, offset + time, 0, 0, 1);
     RotateZ( &c.p0, offset + time, 0, 0, 1);
-    makeCurve(c, 20);
+    return c;
 }
 
-void
+Curve
 rotateCurveX(float time, Curve c, int offset){
     time = time * 20;
     RotateX( &c.p1, offset + time, 1, 0, 0);
     RotateX( &c.p2, offset + time, 1, 0, 0);
     RotateX( &c.p3, offset + time, 1, 0, 0);
-    RotateX( &c.p0, offset + time, 1, 0, 0);
-    makeCurve(c, 20);
+    return c;
 }

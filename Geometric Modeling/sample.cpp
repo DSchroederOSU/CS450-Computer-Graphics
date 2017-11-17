@@ -15,6 +15,7 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #include "drawcurve.cpp"
+#include "mjbsphere.cpp"
 //	This is a sample OpenGL / GLUT program
 //
 //	The objective is to draw a 3d object and change the color of the axes
@@ -187,7 +188,8 @@ float	Xrot, Yrot;				// rotation angles in degrees
 
 
 // function prototypes:
-
+void 	DrawControlPoints( Curve );
+void	DrawSeagull( );
 void	Animate( );
 void	Display( );
 void	DoAxesMenu( int );
@@ -222,9 +224,11 @@ void	HsvRgb( float[3], float [3] );
 #define TIME_VARIABLE 1000
 float Time;
 GLuint	circleList;
-float lookVector[] = {0., 0., -14};
+float lookVector[] = {0., 0., -10};
 float lookatVector[] = {0., 0., 0.};
-
+int freeze = 0;
+int drawControl = 1;
+int showHead = 1;
 // main program:
 
 int
@@ -288,11 +292,11 @@ Animate( )
 	int ms = glutGet( GLUT_ELAPSED_TIME );	// milliseconds
 
 	ms  %=  (TIME_VARIABLE);
-	Time = (float)ms  /  (float)TIME_VARIABLE;        // [ 0., 1. )
-	// force a call to Display( ) next time it is convenient:
-
-	Time =  (int)(Time*360)* M_PI / 180.0;
-
+	if (freeze == 0) {
+		Time = (float) ms / (float) TIME_VARIABLE;        // [ 0., 1. )
+		// force a call to Display( ) next time it is convenient:
+		Time = (int) (Time * 360) * M_PI / 180.0;
+	}
 	glutPostRedisplay( );
 }
 
@@ -411,94 +415,20 @@ Display( )
 
 	// draw the current object:
 	glPushMatrix( );
-		Point a;
-		a.x0 = a.x = 2 - (0.5)*sin(Time);
-		a.y0 = a.y = 0;
-		a.z0 = a.z = 0;
-
-		Point b;
-		b.x0 = b.x = 1.5;
-		b.y0 = b.y = 0.7;
-		b.z0 = b.z = 0;
-
-		Point c;
-		c.x0 = c.x = 0.5;
-		c.y0 = c.y = 0.7;
-		c.z0 = c.z = 0;
-
-		Point d;
-		d.x0 = d.x = 0;
-		d.y0 = d.y = 0;
-		d.z0 = d.z = 0;
-
-		Point a1;
-		a1.x0 = a1.x = -2 + (0.5)*sin(Time);
-		a1.y0 = a1.y = 0;
-		a1.z0 = a1.z = 0;
-
-		Point b1;
-		b1.x0 = b1.x = -1.5;
-		b1.y0 = b1.y = 0.7;
-		b1.z0 = b1.z = 0;
-
-		Point c1;
-		c1.x0 = c1.x = -0.5;
-		c1.y0 = c1.y = 0.7;
-		c1.z0 = c1.z = 0;
-
-		Point d1;
-		d1.x0 = d1.x = 0;
-		d1.y0 = d1.y = 0;
-		d1.z0 = d1.z = 0;
-
-		Curve wing1;
-		wing1.p0 = a;
-		wing1.p1 = b;
-		wing1.p2 = c;
-		wing1.p3 = d;
-		wing1.r = 1;
-		wing1.g = .3;
-		wing1.b = 0.2;
-
-		Curve wing2;
-		wing2.p0 = a1;
-		wing2.p1 = b1;
-		wing2.p2 = c1;
-		wing2.p3 = d1;
-		wing2.r = 1;
-		wing2.g = .3;
-		wing2.b = 0.2;
-
-		int i;
-		makeCurve(wing1, 20);
-
-		for(i = -15; i < 15; i++){
-			rotateCurveX(0, wing1, 2*i);
-		}
-
-		makeCurve(wing2, 20);
-		for(i = -15; i < 15; i++){
-			rotateCurveX(0, wing2, 2*i);
-		}
+		glScalef(3, 3, 3);
+		DrawSeagull();
 	glPopMatrix( );
-
-	glPushMatrix( );
-		glTranslatef(0., 3., 0.);
-
-		makeCurve(wing1, 20);
-
-		for(i = -15; i < 15; i++){
-			rotateCurveX(0, wing1, 2*i);
-		}
-
-		makeCurve(wing2, 20);
-		for(i = -15; i < 15; i++){
-			rotateCurveX(0, wing2, 2*i);
-		}
-	glPopMatrix( );
-
 
 	/*
+	glPushMatrix( );
+		glTranslatef(2.5, 1.5, 1);
+		DrawSeagull();
+	glPopMatrix( );
+	glPushMatrix( );
+		glTranslatef(-2.5, 1.5, 1);
+		DrawSeagull();
+	glPopMatrix( );
+
 	glPushMatrix();
 
 		glRotatef( rand()%360 + Time * 180.0 / M_PI,   -1.+rand()%3, -1.+ rand()%3, -1.+ rand()%3  );
@@ -557,7 +487,14 @@ Display( )
 	// draw some gratuitous text that just rotates on top of the scene:
 
 	// draw some gratuitous text that is fixed on the screen:
-	//
+	glDisable( GL_DEPTH_TEST );
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity( );
+	gluOrtho2D( 0., 100.,     0., 100. );
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity( );
+	glColor3f( 1., 1., 1. );
+	DoRasterString( 28., 25., 0., "FLOCK OF SEAGULLS" );
 	// the projection matrix is reset to define a scene whose
 	// world coordinate system goes from 0-100 in each axis
 	//
@@ -931,7 +868,27 @@ Keyboard( unsigned char c, int x, int y )
 		case 'O':
 			WhichProjection = ORTHO;
 			break;
-
+		case 'c':
+		case 'C':
+			if (drawControl == 1)
+				drawControl = 0;
+			else
+				drawControl = 1;
+			break;
+		case 'f':
+		case 'F':
+			if ( freeze == 0 )
+				freeze = 1;
+			else
+				freeze = 0;
+			break;
+		case 'h':
+		case 'H':
+			if ( showHead == 0 )
+				showHead = 1;
+			else
+				showHead = 0;
+			break;
 		case 'p':
 		case 'P':
 			WhichProjection = PERSP;
@@ -953,7 +910,6 @@ Keyboard( unsigned char c, int x, int y )
 		case 'd':
 		case 'D':
 			lookatVector[0]--;
-
 			break;
 		case 'q':
 		case 'Q':
@@ -1022,7 +978,7 @@ MouseButton( int button, int state, int x, int y )
 void
 MouseMotion( int x, int y )
 {
-	if( DebugOn != 1 )
+	if( DebugOn != 0 )
 		fprintf( stderr, "MouseMotion: %d, %d\n", x, y );
 
 
@@ -1034,8 +990,7 @@ MouseMotion( int x, int y )
 		Xrot += ( ANGFACT*dy );
 		Yrot += ( ANGFACT*dx );
 	}
-	printf("%f\n", Xrot);
-	printf("%f\n", Yrot);
+
 
 	if( ( ActiveButton & MIDDLE ) != 0 )
 	{
@@ -1307,4 +1262,214 @@ HsvRgb( float hsv[3], float rgb[3] )
 	rgb[1] = g;
 	rgb[2] = b;
 }
+void DrawControlPoints(Curve c) {
+	if (drawControl == 1) {
+		glColor3f(0, 1, 0);
+		glPushMatrix();
 
+		glTranslatef(c.p0.x, c.p0.y, c.p0.z);
+		MjbSphere(0.02, 20, 20);
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(c.p1.x, c.p1.y, c.p1.z);
+		MjbSphere(0.02, 20, 20);
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(c.p2.x, c.p2.y, c.p2.z);
+		MjbSphere(0.02, 20, 20);
+		glPopMatrix();
+		glPushMatrix();
+		glTranslatef(c.p3.x, c.p3.y, c.p3.z);
+		MjbSphere(0.02, 5, 5);
+		glPopMatrix();
+		glColor3f(1, 1, 0);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(c.p0.x, c.p0.y, c.p0.z);
+		glVertex3f(c.p1.x, c.p1.y, c.p1.z);
+		glVertex3f(c.p2.x, c.p2.y, c.p2.z);
+		glVertex3f(c.p3.x, c.p3.y, c.p3.z);
+
+		glEnd();
+	}
+}
+void DrawSeagull(){
+	glPushMatrix();
+	Point a;
+	a.x0 = a.x = 2 - (0.5)*sin(Time);
+	a.y0 = a.y = 0.2 - (0.5)*sin(Time);
+	a.z0 = a.z = 0;
+
+	Point b;
+	b.x0 = b.x = 1.5;
+	b.y0 = b.y = 0.7 - (0.1)*sin(Time);
+	b.z0 = b.z = 0;
+
+	Point c;
+	c.x0 = c.x = 0.5;
+	c.y0 = c.y = 0.7;
+	c.z0 = c.z = 0;
+
+	Point d;
+	d.x0 = d.x = 0;
+	d.y0 = d.y = 0;
+	d.z0 = d.z = 0;
+
+	Point a1;
+	a1.x0 = a1.x = -2 + (0.5)*sin(Time);
+	a1.y0 = a1.y = 0.2 - (0.5)*sin(Time);
+	a1.z0 = a1.z = 0;
+
+	Point b1;
+	b1.x0 = b1.x = -1.5;
+	b1.y0 = b1.y = 0.7 - (0.1)*sin(Time);
+	b1.z0 = b1.z = 0;
+
+	Point c1;
+	c1.x0 = c1.x = -0.5;
+	c1.y0 = c1.y = 0.7;
+	c1.z0 = c1.z = 0;
+
+	Point d1;
+	d1.x0 = d1.x = 0;
+	d1.y0 = d1.y = 0;
+	d1.z0 = d1.z = 0;
+
+	// body points
+	Point a2;
+	a2.x0 = a2.x = 1.8;
+	a2.y0 = a2.y = 0.3;
+	a2.z0 = a2.z = 0;
+
+	Point b2;
+	b2.x0 = b2.x = 1.5;
+	b2.y0 = b2.y = 0.4;
+	b2.z0 = b2.z = 0;
+
+	Point c2;
+	c2.x0 = c2.x = 0.5;
+	c2.y0 = c2.y = 0.4;
+	c2.z0 = c2.z = 0;
+
+	Point d2;
+	d2.x0 = d2.x = 0;
+	d2.y0 = d2.y = 0;
+	d2.z0 = d2.z = 0;
+
+	Curve wing1;
+	wing1.p0 = a;
+	wing1.p1 = b;
+	wing1.p2 = c;
+	wing1.p3 = d;
+	wing1.r = .66;
+	wing1.g = .66;
+	wing1.b = .66;
+
+	Curve wing2;
+	wing2.p0 = a1;
+	wing2.p1 = b1;
+	wing2.p2 = c1;
+	wing2.p3 = d1;
+	wing2.r = .66;
+	wing2.g = .66;
+	wing2.b = .66;
+
+	Curve body;
+	body.p0 = a2;
+	body.p1 = b2;
+	body.p2 = c2;
+	body.p3 = d2;
+	body.r = .66;
+	body.g = .66;
+	body.b = .66;
+
+	int i;
+	makeCurve(wing1, 20);
+	DrawControlPoints(wing1);
+	for(i = -15; i < 15; i++){
+		wing1 = rotateCurveX(0, wing1, 2*i);
+		if (i%3 == 0)
+			DrawControlPoints(wing1);
+		makeCurve(wing1, 20);
+	}
+
+	makeCurve(wing2, 20);
+	for(i = -15; i < 15; i++){
+		wing2 = rotateCurveX(0, wing2, 2*i);
+		if (i%3 == 0)
+			DrawControlPoints(wing2);
+		makeCurve(wing2, 20);
+	}
+
+	glTranslatef(0, 0, 1);
+	glRotatef(90, 0., 1., 0.);
+
+	for(i = 0; i < 360; i++){
+		body = rotateCurveX(0, body, 2*i);
+		if (i%20 == 0)
+			DrawControlPoints(body);
+		makeCurve(body, 20);
+	}
+
+	glPopMatrix();
+
+	// make tail
+	glPushMatrix();
+		glRotatef(5, 1, 0, 0);
+		glTranslatef(0, 0, 0.5);
+		glBegin(GL_TRIANGLE_STRIP);
+			glVertex3f(0, 0, 0);
+			glVertex3f(0.5, 0.2, 0.8);
+			glVertex3f(-0.5, 0.2, 0.8);
+			glVertex3f(-0.5, 0, 0.8);
+			glVertex3f(0, 0, 0);
+			glVertex3f(0.5, 0, 0.8);
+			glVertex3f(0.5, 0.2, 0.8);
+			glVertex3f(-0.5, 0.2, 0.8);
+		glEnd();
+	glPopMatrix();
+
+	if (showHead == 1) {
+		// make head
+		glPushMatrix();
+		// head points
+		Point a3;
+		a3.x0 = a3.x = 0;
+		a3.y0 = a3.y = 0;
+		a3.z0 = a3.z = 0;
+
+		Point b3;
+		b3.x0 = b3.x = 0;
+		b3.y0 = b3.y = 0.1;
+		b3.z0 = b3.z = 0.2;
+
+		Point c3;
+		c3.x0 = c3.x = 0;
+		c3.y0 = c3.y = 0.24;
+		c3.z0 = c3.z = 0.32;
+
+		Point d3;
+		d3.x0 = d3.x = 0;
+		d3.y0 = d3.y = 0;
+		d3.z0 = d3.z = 0.45;
+
+		Curve head;
+		head.p0 = a3;
+		head.p1 = b3;
+		head.p2 = c3;
+		head.p3 = d3;
+		head.r = .66;
+		head.g = .66;
+		head.b = .66;
+		glTranslatef(0, 0.35, -1.05);
+		for (i = 0; i < 360; i++) {
+			head = rotateCurveZ(0, head, 2 * i);
+			if (i % 20 == 0)
+				DrawControlPoints(head);
+			makeCurve(head, 20);
+
+		}
+
+
+		glPopMatrix();
+	}
+}
