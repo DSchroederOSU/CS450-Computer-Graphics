@@ -13,16 +13,10 @@ varying vec3 vE; // vector from point to eye
 varying vec4 vertex;
 
 
-
-
 //---------MAIN------------
 void main(){
 
-    vec3 myColor = vec3(0,1,1);
-
-        if(vST.s > (0. + uniformTime) && vST.s < (0.5 + uniformTime)){
-            myColor = vec3(1,0,0);
-        }
+        vec3 myColor = vec3(0.1328125, 0.640625, 0.9375);
 
 
     	vec3 Normal = normalize(vN);

@@ -11,13 +11,13 @@ const float PI =        3.14159265;
 const float AMP =       0.2;
 const float W =         2.;
 
-const vec3 LIGHTPOSITION = vec3( 0., 5., -5. );
+const vec3 LIGHTPOSITION = vec3( 0., 0., 0. );
 void
 main( )
 {
     vST = gl_MultiTexCoord0.st;
     vec4 ECposition = gl_ModelViewMatrix * gl_Vertex;
-    vN = normalize( gl_NormalMatrix * gl_Normal ); // normal vector
+    vN = vec3( 0., 0., 0. ) - normalize( gl_NormalMatrix * gl_Normal ); // normal vector
     vL = LIGHTPOSITION - ECposition.xyz; // vector from the point
     // to the light position
     vE = vec3( 0., 0., 0. ) - ECposition.xyz; // vector from the point

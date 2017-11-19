@@ -202,12 +202,14 @@ float	Xrot, Yrot;				// rotation angles in degrees
 
 
 // function prototypes:
-void    drawHemisphere( float radius, int lats, int longs );
+void 	drawNormal( float normal[3], float vertex[3]);
+void    drawSkydome( float radius, int lats, int longs );
 void    drawStrip(int length );
 void 	moveForward( float camera[3], float lookat[3] );
 void 	moveBackward( float camera[3], float lookat[3] );
 void 	drawGround( );
 void 	drawSky( );
+void    drawClouds( );
 float 	Unit( float vin[3], float vout[3] );
 float	Dot( float v1[3], float v2[3]);
 void 	drawBuilding(float width, float height , const GLfloat window[3]);
@@ -264,16 +266,21 @@ int texture2_w, texture2_h;
 //Shaders//
 GLSLProgram *Building;
 GLSLProgram *Sky;
+GLSLProgram *Clouds;
 float pat = 0;
 float FRAGMENT = 1.;
 float FREEZE = 1.;
 float PATTERN = 1.;
 const float DEG2RAD = 3.14159/180;
 
-
+#define noiseWidth 20
+#define noiseHeight 20
+double noise[noiseHeight][noiseWidth];
 // main program:
-
-
+void generateNoise();
+double smoothNoise(double x, double y);
+double turbulence(double x, double y, double size);
+void	HsvRgb( float[3], float [3] );
 
 
 int
@@ -416,8 +423,8 @@ Display( )
 
 	// rotate the scene:
 
-	//glRotatef( (GLfloat)Yrot, );
-	//glRotatef( (GLfloat)Xrot, cameraVector[0], 0, 0);
+	glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+	glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
 
 	// uniformly scale the scene:
@@ -457,23 +464,12 @@ Display( )
 	// since we are using glScalef( ), be sure normals get unitized:
 
 
-    Building->Use();
-    Building->SetUniformVariable((char *) "uniformTime", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
 
-    Building->SetUniformVariable((char *) "uPat", (float) (pat));
-    Building->SetUniformVariable((char *) "uKa", (float) 0.25);
-    Building->SetUniformVariable((char *) "uKd", (float) .5);
-    Building->SetUniformVariable((char *) "uKs", (float) .25);
-    Building->SetUniformVariable((char *) "uShininess", (float) 1);
-    Building->SetUniformVariable((char *) "uS0", 1);
-    Building->SetUniformVariable((char *) "uT0", 1);
-    Building->SetUniformVariable((char *) "uSize", (float) 1);
 		// draw the current object:
-    Building->Use(0);
 
 
 
-    /*
+
 	glPushMatrix( );
 		glTranslatef( 5., 0., 0. );
 		drawBuilding(3., 8., NeutralColors[1]);
@@ -495,10 +491,10 @@ Display( )
         glTranslatef( 0., 0., -10. );
         drawBuilding(3., 16., NeutralColors[2]);
     glPopMatrix( );
-    */
 
 
 
+    /*
 	glEnable(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -508,11 +504,12 @@ Display( )
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture2_w, texture2_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture2);
     glDisable(GL_TEXTURE_2D);
-
+    */
     glPushMatrix( );
 		drawSky( );
 	glPopMatrix( );
-
+	glPushMatrix( );
+	glPopMatrix( );
 
 	drawGround( );
 	/*
@@ -869,6 +866,7 @@ InitGraphics( )
 
     drawStrip(5);
 
+
 	Sky = new GLSLProgram( );
 	bool skyValid = Sky->GLSLProgram::Create( "sky.vert",  "sky.frag" );
 	if( ! skyValid )
@@ -881,6 +879,19 @@ InitGraphics( )
 		fprintf( stderr, "Shader created.\n" );
 	}
 	Sky->GLSLProgram::SetVerbose( false );
+
+    Clouds = new GLSLProgram( );
+    bool cloudsValid = Clouds->GLSLProgram::Create( "cloud.vert",  "cloud.frag" );
+    if( ! cloudsValid )
+    {
+        fprintf( stderr, "Shader cannot be created!\n" );
+        DoMainMenu( QUIT );
+    }
+    else
+    {
+        fprintf( stderr, "Shader created.\n" );
+    }
+    Clouds->GLSLProgram::SetVerbose( false );
 
 }
 
@@ -1370,7 +1381,17 @@ HsvRgb( float hsv[3], float rgb[3] )
 
 void
 drawBuilding(float width, float height , const GLfloat window[3]){
+    Building->Use();
+    Building->SetUniformVariable((char *) "uniformTime", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
 
+    Building->SetUniformVariable((char *) "uPat", (float) (pat));
+    Building->SetUniformVariable((char *) "uKa", (float) 0.25);
+    Building->SetUniformVariable((char *) "uKd", (float) .5);
+    Building->SetUniformVariable((char *) "uKs", (float) .25);
+    Building->SetUniformVariable((char *) "uShininess", (float) 1);
+    Building->SetUniformVariable((char *) "uS0", 1);
+    Building->SetUniformVariable((char *) "uT0", 1);
+    Building->SetUniformVariable((char *) "uSize", (float) 1);
 	Building->SetUniformVariable((char *) "r", (float) window[0]);
 	Building->SetUniformVariable((char *) "g", (float) window[1]);
 	Building->SetUniformVariable((char *) "b", (float) window[2]);
@@ -1398,6 +1419,7 @@ drawBuilding(float width, float height , const GLfloat window[3]){
 			glEnd( );
 		glPopMatrix( );
 	}
+
 	/*
 	glColor3f(1., 0., 0.);
 	glPushMatrix( );
@@ -1421,7 +1443,7 @@ drawBuilding(float width, float height , const GLfloat window[3]){
 		glEnd( );
 	glPopMatrix( );
 	*/
-
+    Building->Use(0);
 }
 
 
@@ -1494,29 +1516,15 @@ void drawGround( ){
 		glEnd( );
 	glPopMatrix( );
 }
-void drawSky( ){
-    Sky->Use();
-    Sky->SetUniformVariable((char *) "uniformTime", (float) 1.);
+void drawSky( ) {
 
-    Sky->SetUniformVariable((char *) "uPat", (float) (pat));
-    Sky->SetUniformVariable((char *) "uKa", (float) 0.25);
-    Sky->SetUniformVariable((char *) "uKd", (float) .5);
-    Sky->SetUniformVariable((char *) "uKs", (float) .25);
-    Sky->SetUniformVariable((char *) "uShininess", (float) 1);
-    Sky->SetUniformVariable((char *) "uS0", 1);
-    Sky->SetUniformVariable((char *) "uT0", 1);
-    Sky->SetUniformVariable((char *) "uSize", (float) 1);
-    // draw the current object:
 
-    glPushMatrix( );
-    //glRotatef(90, 1, 0, 0);
+    glPushMatrix();
+    	glRotatef(90, 1, 0, 0);
+    	glScalef(20, 20, 20);
+		drawSkydome(2, 50, 50);
+	glPopMatrix( );
 
-    //glScalef(20, 20, 20);
-
-    drawHemisphere(5, 180, 180);
-
-    glPopMatrix( );
-    Sky->Use(0);
 }
 
 void drawStrip(int length ){
@@ -1544,8 +1552,20 @@ void drawStrip(int length ){
     }
 }
 
-void drawHemisphere( float radius, int lats, int longs ) {
-    int i, j;
+void drawSkydome( float radius, int lats, int longs ) {
+	Clouds->Use();
+	float mouse[2] = {Xrot, Yrot};
+	float res[2] = {600, 600};
+	Clouds->SetUniformVariable((char *) "eyex", (float) cameraVector[0]);
+	Clouds->SetUniformVariable((char *) "eyey", (float) cameraVector[1]);
+	Clouds->SetUniformVariable((char *) "eyez", (float) cameraVector[2]);
+	Clouds->SetUniformVariable((char *) "u_resolution_x", (float) res[0]);
+	Clouds->SetUniformVariable((char *) "u_resolution_y", (float) res[1]);
+	Clouds->SetUniformVariable((char *) "u_mouse_x", (float) mouse[0]);
+	Clouds->SetUniformVariable((char *) "u_mouse_y", (float) mouse[1]);
+	Clouds->SetUniformVariable((char *) "u_time", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
+
+	int i, j;
     int halfLats = lats / 2;
     for(i = 0; i <= halfLats; i++)
     {
@@ -1557,7 +1577,7 @@ void drawHemisphere( float radius, int lats, int longs ) {
         double z1 = sin(lat1);
         double zr1 = cos(lat1);
 
-        glBegin(GL_QUAD_STRIP);
+        glBegin(GL_TRIANGLE_STRIP);
         for(j = 0; j <= longs; j++)
         {
             double lng = 2 * M_PI * (double) (j - 1) / longs;
@@ -1571,13 +1591,22 @@ void drawHemisphere( float radius, int lats, int longs ) {
 
             glTexCoord2d(s1, t);
             glNormal3d(x * zr0, y * zr0, z0);
-            glVertex3d(x * zr0, y * zr0, z0);
+
+            glVertex3d(radius * x * zr0,radius * y * zr0, radius * z0);
 
             glTexCoord2d(s2, t);
             glNormal3d(x * zr1, y * zr1, z1);
-            glVertex3d(x * zr1, y * zr1, z1);
+            glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
         }
         glEnd();
     }
+	Clouds->Use(0);
+
+
+}
+void drawNormal( float normal[3], float vertex[3]){
+
+
+
 
 }
