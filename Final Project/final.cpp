@@ -247,15 +247,15 @@ void	HsvRgb( float[3], float [3] );
 #define TIME_VARIABLE 1000
 float Time;
 GLuint	circleList;
-float cameraVector[] = {0., 1., -2};
-float lookatVector[] = {0., 1., 0.};
+float cameraVector[] = {0., 1.5, -2};
+float lookatVector[] = {0., 1.5, 0.};
 int freeze = 0;
 int drawControlPoints = 1;
 int drawControlLines = 1;
 int showHead = 1;
 int showCluster = 0;
 int lookatAngle = 90;
-
+bool keyboardBuf[256];
 //Textures//
 unsigned char *texture;
 int texture_w, texture_h;
@@ -414,7 +414,10 @@ Display( )
 	glLoadIdentity( );
 
 
+
+
 	// set the eye position, look-at position, and up-vector:
+
 
 	gluLookAt( cameraVector[0], cameraVector[1], cameraVector[2],
 			   lookatVector[0], lookatVector[1], lookatVector[2],
@@ -493,8 +496,6 @@ Display( )
     glPopMatrix( );
 
 
-
-    /*
 	glEnable(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -504,21 +505,24 @@ Display( )
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, texture2_w, texture2_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture2);
     glDisable(GL_TEXTURE_2D);
-    */
+
+
     glPushMatrix( );
-		drawSky( );
-	glPopMatrix( );
-	glPushMatrix( );
-	glPopMatrix( );
+    glRotatef(90, 1, 0, 0);
+    glScalef(20, 20, 20);
+
+    drawSkydome(5, 50, 50);
+    glPopMatrix( );
 
 	drawGround( );
+	//drawStrip(5);
 	/*
 
 	*/
 	if( DepthFightingOn != 0 )
 	{
 		glPushMatrix( );
-			glRotatef( 90.,   0., 1., 0. );
+			glRotatef( 90., 0., 1., 0. );
 			glCallList( BoxList );
 		glPopMatrix( );
 	}
@@ -864,22 +868,6 @@ InitGraphics( )
 	Building->GLSLProgram::SetVerbose( false );
 
 
-    drawStrip(5);
-
-
-	Sky = new GLSLProgram( );
-	bool skyValid = Sky->GLSLProgram::Create( "sky.vert",  "sky.frag" );
-	if( ! skyValid )
-	{
-		fprintf( stderr, "Shader cannot be created!\n" );
-		DoMainMenu( QUIT );
-	}
-	else
-	{
-		fprintf( stderr, "Shader created.\n" );
-	}
-	Sky->GLSLProgram::SetVerbose( false );
-
     Clouds = new GLSLProgram( );
     bool cloudsValid = Clouds->GLSLProgram::Create( "cloud.vert",  "cloud.frag" );
     if( ! cloudsValid )
@@ -893,6 +881,7 @@ InitGraphics( )
     }
     Clouds->GLSLProgram::SetVerbose( false );
 
+	drawStrip(5);
 }
 
 
@@ -949,6 +938,7 @@ InitLists( ) {
 void
 Keyboard( unsigned char c, int x, int y )
 {
+    keyboardBuf[c] = true;
 	float looky;
 	float lookx;
 	float a;
@@ -1020,6 +1010,7 @@ Keyboard( unsigned char c, int x, int y )
 		case 'D':
 			lookatAngle += 15;
 			a = lookatAngle * (M_PI/180);
+            fprintf( stderr, "%f\n", lookatAngle * (M_PI/180));
 
 			lookatVector[0] = cameraVector[0] + cos(a);
 			lookatVector[2] = cameraVector[2] + sin(a);
@@ -1516,16 +1507,6 @@ void drawGround( ){
 		glEnd( );
 	glPopMatrix( );
 }
-void drawSky( ) {
-
-
-    glPushMatrix();
-    	glRotatef(90, 1, 0, 0);
-    	glScalef(20, 20, 20);
-		drawSkydome(2, 50, 50);
-	glPopMatrix( );
-
-}
 
 void drawStrip(int length ){
     int i;
@@ -1546,67 +1527,30 @@ void drawStrip(int length ){
             glVertex3f( 1, 0, 0);
         glEnd( );
         int randLeft = rand()%2;
-        printf("%d\n", randLeft);
         glPopMatrix();
 
     }
 }
+void drawSky( ) {
 
+}
 void drawSkydome( float radius, int lats, int longs ) {
 	Clouds->Use();
 	float mouse[2] = {Xrot, Yrot};
 	float res[2] = {600, 600};
-	Clouds->SetUniformVariable((char *) "eyex", (float) cameraVector[0]);
-	Clouds->SetUniformVariable((char *) "eyey", (float) cameraVector[1]);
-	Clouds->SetUniformVariable((char *) "eyez", (float) cameraVector[2]);
+
 	Clouds->SetUniformVariable((char *) "u_resolution_x", (float) res[0]);
 	Clouds->SetUniformVariable((char *) "u_resolution_y", (float) res[1]);
-	Clouds->SetUniformVariable((char *) "u_mouse_x", (float) mouse[0]);
-	Clouds->SetUniformVariable((char *) "u_mouse_y", (float) mouse[1]);
 	Clouds->SetUniformVariable((char *) "u_time", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
 
-	int i, j;
-    int halfLats = lats / 2;
-    for(i = 0; i <= halfLats; i++)
-    {
-        double lat0 = M_PI * (-0.5 + (double) (i - 1) / lats);
-        double z0 = sin(lat0);
-        double zr0 = cos(lat0);
+    glutWireSphere(radius, 40, 40);
 
-        double lat1 = M_PI * (-0.5 + (double) i / lats);
-        double z1 = sin(lat1);
-        double zr1 = cos(lat1);
-
-        glBegin(GL_TRIANGLE_STRIP);
-        for(j = 0; j <= longs; j++)
-        {
-            double lng = 2 * M_PI * (double) (j - 1) / longs;
-            double x = cos(lng);
-            double y = sin(lng);
-
-            double s1, s2, t;
-            s1 = ((double) i) / halfLats;
-            s2 = ((double) i + 1) / halfLats;
-            t = ((double) j) / longs;
-
-            glTexCoord2d(s1, t);
-            glNormal3d(x * zr0, y * zr0, z0);
-
-            glVertex3d(radius * x * zr0,radius * y * zr0, radius * z0);
-
-            glTexCoord2d(s2, t);
-            glNormal3d(x * zr1, y * zr1, z1);
-            glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
-        }
-        glEnd();
-    }
-	Clouds->Use(0);
-
+    Clouds->Use(0);
 
 }
-void drawNormal( float normal[3], float vertex[3]){
 
+void movement() {
+    if (keyboardBuf['w'] || keyboardBuf['W']){
 
-
-
+    }
 }

@@ -1,15 +1,13 @@
 #version 110
 
 uniform float u_resolution_x;
-uniform float u_mouse_x;
 uniform float u_resolution_y;
-uniform float u_mouse_y;
 uniform float u_time;
 varying vec2 vST;                   // texture coords
 varying vec3 vN;                    // normal vector
 varying vec3 vL;                    // vector from point to light
 varying vec3 vE;                    // vector from point to eye
-vec2 mouse = vec2(u_mouse_x, u_mouse_y);
+
 vec2 resolution = vec2(u_resolution_x, u_resolution_y);
 // GLSL doesn't have a random function.  So we have to create one ourself.
 // We would like a random number somewhere between 0.0 and 1.0.
