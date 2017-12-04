@@ -5332,6 +5332,11 @@ Display( )
                    lookatVector[0], lookatVector[1], lookatVector[2],
                    0., 1., 0.);
     }
+	else if(OVERVIEW == 2){
+		gluLookAt( 45., 70., 0.,
+				   0., 1., 0.,
+				   0., 1., 0.);
+	}
     else{
         gluLookAt( 15., 25., 25.,
                    0., 1., 0.,
@@ -5376,7 +5381,7 @@ Display( )
 	if( AxesOn != 0 )
 	{
 		glColor3fv( &Colors[WhichColor][0] );
-		glCallList( AxesList );
+		//glCallList( AxesList );
 	}
 
 	glEnable( GL_NORMALIZE );
@@ -5471,7 +5476,6 @@ Display( )
     glScalef(8, 8, 8);
     drawSkydome(5, 50, 50);
     glPopMatrix( );
-
 
     movement();
 	if( DepthFightingOn != 0 )
@@ -6033,9 +6037,36 @@ Keyboard( unsigned char c, int x, int y )
 		case 'h':
 		case 'H':
 			if ( OVERVIEW == 0 )
-                OVERVIEW = 1;
-			else
-                OVERVIEW = 0;
+				OVERVIEW = 1;
+			else{
+				OVERVIEW = 0;
+				cameraVector[0] = 0.;
+				cameraVector[1] = 1.5;
+				cameraVector[2] = -2;
+				lookatVector[0] = 0.;
+				lookatVector[1] = 1.5;
+				lookatVector[2] = 0.;
+				Xrot = 0;
+				Yrot = 0;
+			}
+
+			break;
+		case 'j':
+		case 'J':
+			if ( OVERVIEW == 0 )
+				OVERVIEW = 2;
+			else{
+				OVERVIEW = 0;
+				cameraVector[0] = 0.;
+				cameraVector[1] = 1.5;
+				cameraVector[2] = -2;
+				lookatVector[0] = 0.;
+				lookatVector[1] = 1.5;
+				lookatVector[2] = 0.;
+				Xrot = 0;
+				Yrot = 0;
+			}
+
 			break;
 		case '1':
 			if ( showCluster == 0 )
