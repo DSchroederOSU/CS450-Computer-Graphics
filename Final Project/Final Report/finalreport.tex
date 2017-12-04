@@ -1,8 +1,10 @@
-\documentclass[10pt, draftclsnofoot, onecolumn]{IEEEtran}
+\documentclass[journal,10pt,onecolumn,compsoc]{IEEEtran}
   \usepackage{graphicx}
+  \setlength{\parskip}{\baselineskip} \setlength\parindent{12pt}
   \usepackage{url}
   \usepackage{setspace}
-  
+  \usepackage{textcomp}
+  \usepackage{listings}
   \usepackage[margin=0.75in]{geometry}
   \usepackage{geometry}
   \usepackage{hyperref}
@@ -18,16 +20,7 @@
       urlcolor=black
   }
   \geometry{textheight=9.5in, textwidth=7in}
-  
-  % 1. Fill in these details
-  \def \CapstoneTeamName{		The Dream Team}
-  \def \CapstoneTeamNumber{		57}
-  \def \GroupMemberOne{			Daniel Schroeder}
-  \def \GroupMemberTwo{			Aubrey Thenell}
-  \def \GroupMemberThree{			Parker Bruni}
-  \def \CapstoneProjectName{		A Scalable Web Application Framework for Monitoring Energy Usage on Campus  }
-  \def \CapstoneSponsorCompany{	Oregon State Office of Sustainability}
-  \def \CapstoneSponsorPerson{		Jack Woods}
+   
   
   % 2. Uncomment the appropriate line below so that the document type works
   \def \DocType{		%Problem Statement
@@ -46,11 +39,13 @@
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   \title{CS 450 Computer Graphics: \linebreak Final Project}
-  \author{Daniel Schroeder}
+  \author{Daniel Schroeder \linebreak CS 450 Computer Graphics \linebreak Fall 2017}
   \date{\today}
   
   \begin{document}
   \maketitle
+
+  \date{\today}
   \vspace{2cm}
   \begin{center}
   \noindent \textbf{Abstract} \\
@@ -63,20 +58,71 @@
   \newpage
 
 \section{What you actually did for your project, with images}
-\subsection{Building Shaders}
+\subsection{Town Layout}
+\tiny
+\begin{lstlisting}[language=C++]
+            int town[25][25] = {
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//1
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//2
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//3
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//4
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//5
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//6
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//7
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//8
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//9
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//10
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//11
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//12
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//13
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//14
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//15
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//16
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//17
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//18
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//19
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//20
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//21
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2},//22
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//23
+                {1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1, 3, 3, 1},//24
+                {2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2}//25
+            };
+\end{lstlisting}
+\normalsize
+The town is generated from a 25x25 matrix with different integer values for the different objects at that position. A 3 indicates a building with a random height and 1's and 2's indicate road squares. This layout generates a 2-block grid with cross-hatching roads and 2x2 squares with four buildings each. Additionally, I used this grid to calculate the origin of the road textures (i.e. north-south or east-west) by changing the orientation every two columns. 
+\subsection{Building Generation}
 \begin{center} 
   \begin{figure}[H]
       \centering
       \includegraphics[width=8cm,height=8cm]{skyview.eps}
   \end{figure}
 \end{center}  
-\subsection{Grass Shaders}
+My buildings are generated with random heights and a random neutral window color. The building fragment shader spaces out the windows on each building to be proportionally aligned across the full height of the building and creates a door at the bottom of the building. Each building is comprised of four identical GL\_QUADS rotated 90\textdegree*i about the center of the building. Then there are solid base-colored GL\_QUADS for the floor and roof. This OpenGL draw commands are placed inside a ``DrawBuilding'' function that takes a width, height, and color as parameters in order to generate randomly sized and colored buildings for each ``3'' in the town layout grid.
+\subsection{Grass Shaders}\label{sec:grass}
+\noindent My grass shader was probably the biggest component of the finalized project. I generates a vertex buffer array comprised of 4,840 vertices that used a GL\_TRIANGLE\_STRIP to create 100 blades of grass in a one-by-one square. A blade of grass consisted of 11 triangles that followed one of the two following constructs:
 \begin{center} 
-  \begin{figure}[H]
-      \centering
-      \includegraphics[width=8cm,height=8cm]{grass.eps}
-  \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=4cm,height=4cm]{grass-diagram.eps}
+    \end{figure}
 \end{center}  
+Each blade was randomly rotated some amount between 0\textdegree-360\textdegree and sent to the grass shader. To draw the entire grass terrain, I loaded my vertex buffer object and used ``glDrawArrays(GL\_TRIANGLE\_STRIP, 0, 4840);'' in a double for-loop to effectively render a 40x40 grid (with a 25x25 gap in the center for the town) with each square containing 100 blades of grass that created the outer terrain of the city-scape:
+\begin{center} 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=8cm,height=8cm]{terrain-outline.eps}
+    \end{figure}
+\end{center} 
+Doing the math, this produced 1,089,000 vertices for all the blades of grass of the terrain. This did not make my GPU happy when I tried to do it all with OpenGL drawing functions, so it forced me to create a vertex buffer object to store on the GPU and drastically reduced the individual drawing calls for each blade of grass from 22,500 to only 225 by storing the each one-by-one patch as a vertex buffer array. Once I could get the grass rendered without any latency issues, I toggles with the ambient, diffuse, and specular in the fragment shader to get a soft, flat glow on the individual blades of grass as they were constantly ``blowing in the wind'' as a function of a uniform time variable passed into the vertex shader. The movement of the grass changed the position of the z-coordinates proportional to the y-coordinate so the bottom of the grass plate appears ``grounded'' while the rest of blade sways more vigorously the higher it is.
+\subsection{Skydome Shader}
+\begin{center} 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=8cm,height=8cm]{skydome.eps}
+    \end{figure}
+\end{center} 
+\noindent My skydome object was a basic glutSolidSphere object passed to my cloud glsl shader which generated random noise to simulate clouds. I found a basic example of noise generation online and manipulated the shader to have a flat blue background to simulate a sky. I had an issue getting the skydome to work completely correct and stay fixed as the user changes the gluLookAt position to effectively ``look around.'' The current implementation generates a sky that moves with the user eye position so you are stuck looking at the same portion of the dome the entire time.
 \subsection{Road Texture Mapping}
 \begin{center} 
   \begin{figure}[H]
@@ -84,20 +130,107 @@
       \includegraphics[width=8cm,height=8cm]{street.eps}
   \end{figure}
 \end{center}  
-\subsection{Skydome Shader}
-\begin{center} 
-  \begin{figure}[H]
-      \centering
-      \includegraphics[width=8cm,height=8cm]{skydome.eps}
-  \end{figure}
-\end{center}  
+For my city roads, I used a seamless road texture mapped to the GL\_QUAD for every square of street. This created a better looking, continuous road that simply using colors and shaders. The roads also depict direction with long ``boulevard'' style streets stretching from ``North'' to ``South'' and smaller incremental streets connecting the ``boulevards'' from ``east'' to ``west.''
 \section{How your project differs from what you proposed, and why}
+\noindent Although the aspect of terrain was not explicitly specified in my proposal, I became fascinated with the idea of hyper-realistic terrain rendering and began doing research on concepts like atmospheric scattering, high-density terrain rendering, and OpenGL grass rendering. Generating the buildings with a simple glsl shader proved to be simple enough from my experience from previous projects, so I began to challenge myself by trying to create a hyper-realistic terrain outside of the city itself. The image attached to my proposal was what I expected my final project to look like, but I ended up being able to generate a much more complicated scene with higher detail and more intricate features. For example, I used seamless textures for my roads rather than creating a crude coloring scheme of black with yellow divider lines. 
+\noindent I also wanted to add perspective outside the city to simulate a distant horizon rather than keeping the default black distance buffer. To do this I researched and generated a (semi-functional) skydome objects that uses a template algorithm for noise generation by using ``Fractional Brownian Motion'' and ``bilinearly interpolated lattices'' from an example (link: \href{http://xdpixel.com/procedurally-generating-noise-in-a-shader/}{\textit{PROCEDURALLY GENERATING NOISE IN A SHADER}}) by the team at xdPixel. I manipulated the code to produce a flat blue background with white noise on top to simulate a sky and clouds, rather than the white and black smoke-like example from the website.
+\noindent Additionally, I changed the way my camera moves with user input by creating a key handler with a key buffer rather than handling movement with switch cases in the Keyboard() function from the sample program. I followed the style for fluid movement from another classmate's implementation for his final project found at (Link: \href{https://github.com/BeNsAeI/Tank-2017-Linux}{\textit{Ben's Github Repository}}). This method created fluid user movement rather than staggered, incremental movements generated by individual key presses.
 \section{Any impressive cleverness you want us to know about}
-\section{What you learned from doing this project (i.e., what you know now that you didn't know when you started)}
-\section{Any images that are especially representative of what you did}
-\section{A link to the video showing off your project.}
+\noindent I successfully surprised myself with multiple aspects of this project through the course of its development. Notably, my complex generation of grass objects with complex GL\_TRIANGLE\_STRIP configurations and trigonometry to calculate random vertex rotation per blade of grass. I would like to include my code because I am just too proud of my methodology.
+\noindent To generate my vertex buffer array, I first created a vertex template for each of the two grass-blade variations shown in \hyperref[sec:grass]{Section: Grass Shader}. These vertices map out to GL\_TRIANGLE\_STRIPS that end as a point at y==0 so it can begin drawing the next blade from the ground up rather than at the top of the previous blade (resulting in a connected triangle between the two).
+\tiny
+\begin{lstlisting}[language=C++]
+GLfloat one[][3]={
+    {0.000000, 0.000000, 0.000000},
+    {0.000000, 0.000000, 0.000000},
+    {0.030000, 0.000000, 0.000000},
+    {0.015000, 0.060000, 0.000000},
+    {0.042500, 0.060000, 0.000000},
+    {0.039000, 0.120000, 0.000000},
+    {0.062500, 0.120000, 0.000000},
+    {0.090000, 0.162500, 0.000000},
+    {0.062500, 0.120000, 0.000000},
+    {0.042500, 0.060000, 0.000000},
+    {0.030000, 0.000000, 0.000000},
+    {0.030000, 0.000000, 0.000000}
+};
+GLfloat two[][3]={
+    {0.015000, 0.000000, 0.000000},
+    {0.015000, 0.000000, 0.000000},
+    {0.000000, 0.055000, 0.000000},
+    {0.023000, 0.350000, 0.000000},
+    {0.015000, 0.000000, 0.000000},
+    {0.050000, 0.000000, 0.000000},
+    {0.050000, 0.055000, 0.000000},
+    {0.075000, 0.055000, 0.000000},
+    {0.110000, 0.100000, 0.000000},
+    {0.075000, 0.055000, 0.000000},
+    {0.050000, 0.000000, 0.000000},
+    {0.050000, 0.000000, 0.000000}
+};
+\end{lstlisting}
+\normalsize
+\noindent After generating the template vertices, I perform a double for-loop in the InitGraphics() function that generates ten rows of ten blades of a random choice between blade style one or blade style two. This for-loop also calculates the position of the vertices after a random rotation from 0\textdegree-360\textdegree. These vertices are printed to a text file as a list of size GLFloat[4840][3].
+\tiny
+\begin{lstlisting}[language=C++]
+FILE * pFile;
+pFile = fopen ("myfile.txt","w");
+float i;
+float j;
+int rot;
+float rad;
+int r;
+for (i = 0; i < 1; i+=0.05){
+for (j = 0; j < 1; j+=0.05){
+    r = rand()%2;
+    rot = rand()%360;
+    rad =rot*(M_PI/180);
+    if (r == 1) {
+        fprintf(pFile, "{%f, %f, %f},\n", (one[0][2]*sin(rad) + one[0][0]*cos(rad)) + j, 0.000000, (one[0][2]*cos(rad) - one[0][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[1][2]*sin(rad) + one[1][0]*cos(rad)) + j, 0.000000, (one[1][2]*cos(rad) - one[1][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[2][2]*sin(rad) + one[2][0]*cos(rad)) + j, 0.000000, (one[2][2]*cos(rad) - one[2][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[3][2]*sin(rad) + one[3][0]*cos(rad)) + j, 0.060000, (one[3][2]*cos(rad) - one[3][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[4][2]*sin(rad) + one[4][0]*cos(rad)) + j, 0.060000, (one[4][2]*cos(rad) - one[4][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[5][2]*sin(rad) + one[5][0]*cos(rad)) + j, 0.120000, (one[5][2]*cos(rad) - one[5][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[6][2]*sin(rad) + one[6][0]*cos(rad)) + j, 0.120000, (one[6][2]*cos(rad) - one[6][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[7][2]*sin(rad) + one[7][0]*cos(rad)) + j, 0.162500, (one[7][2]*cos(rad) - one[7][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[8][2]*sin(rad) + one[8][0]*cos(rad)) + j, 0.120000, (one[8][2]*cos(rad) - one[8][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[9][2]*sin(rad) + one[9][0]*cos(rad)) + j, 0.060000, (one[9][2]*cos(rad) - one[9][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[10][2]*sin(rad) + one[10][0]*cos(rad)) + j, 0.000000, (one[10][2]*cos(rad) - one[10][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (one[11][2]*sin(rad) + one[11][0]*cos(rad)) + j, 0.000000, (one[11][2]*cos(rad) - one[11][0]*sin(rad)) + i);
+    }
+    else{
+        fprintf(pFile, "{%f, %f, %f},\n", (two[0][2]*sin(rad) + two[0][0]*cos(rad)) + j, 0.000000, (two[0][2]*cos(rad) - two[0][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[1][2]*sin(rad) + two[1][0]*cos(rad)) + j, 0.000000, (two[1][2]*cos(rad) - two[1][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[2][2]*sin(rad) + two[2][0]*cos(rad)) + j, 0.055000, (two[2][2]*cos(rad) - two[2][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[3][2]*sin(rad) + two[3][0]*cos(rad)) + j, 0.350000, (two[3][2]*cos(rad) - two[3][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[4][2]*sin(rad) + two[4][0]*cos(rad)) + j, 0.000000, (two[4][2]*cos(rad) - two[4][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[5][2]*sin(rad) + two[5][0]*cos(rad)) + j, 0.000000, (two[5][2]*cos(rad) - two[5][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[6][2]*sin(rad) + two[6][0]*cos(rad)) + j, 0.055000, (two[6][2]*cos(rad) - two[6][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[7][2]*sin(rad) + two[7][0]*cos(rad)) + j, 0.055000, (two[7][2]*cos(rad) - two[7][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[8][2]*sin(rad) + two[8][0]*cos(rad)) + j, 0.100000, (two[8][2]*cos(rad) - two[8][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[9][2]*sin(rad) + two[9][0]*cos(rad)) + j, 0.055000, (two[9][2]*cos(rad) - two[9][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[10][2]*sin(rad) + two[10][0]*cos(rad)) + j, 0.000000, (two[10][2]*cos(rad) - two[10][0]*sin(rad)) + i);
+        fprintf(pFile, "{%f, %f, %f},\n", (two[11][2]*sin(rad) + two[11][0]*cos(rad)) + j, 0.000000, (two[11][2]*cos(rad) - two[11][0]*sin(rad)) + i);
+    }
+}
+fprintf (pFile, "{%f, %f, %f},\n",0.000000+j, 0.000000, 0.000000+i);
+fprintf (pFile, "{%f, %f, %f},\n",0.000000+j, 0.000000, 0.000000+i);
+}
+fclose (pFile);
+\end{lstlisting}
+\normalsize
+I then copied the contents of this text file into the global GLfloat array that I use for my vertex buffer array. I can effectively generate a new configuration of the one-hundred-blade 1x1 squares with every new run of the program.
+\section{What you learned from doing this project}
+\noindent This project exposed me to numerous new elements of OpenGL that I previously had no experience with. Most notable are noise generation from my skydome shader, vertex buffer objects used for my grass rendering, and highly technical trigonometric math to perform rotations and simulate fluid movement. Descriptions of these different components are explained, in detail, in the previous sections. Most of the other techniques were implementations of strategies acquired from previous assignments, but executed to a much higher level of detail and technicality like all the shaders, texture mapping, and basic OpenGL geometry.
+\section{A link to the video showing off your project}
+\begin{center}
+\textbf{Link to Kaltura Video:} 
+\url{https://media.oregonstate.edu/media/t/0_d73n622x}
+
+\end{center}
 \newpage
-\section{Proposal}
+\section{Original Project Proposal}
 \noindent\textbf{Daniel Schroeder}\\
 \textbf{schrodan@oregonstate.edu}\\
 \textbf{Final Project Proposal}\\

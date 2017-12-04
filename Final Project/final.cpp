@@ -5909,7 +5909,6 @@ InitGraphics( )
 				fprintf(pFile, "{%f, %f, %f},\n", (one[11][2]*sin(rad) + one[11][0]*cos(rad)) + j, 0.000000, (one[11][2]*cos(rad) - one[11][0]*sin(rad)) + i);
 			}
 			else{
-				
 				fprintf(pFile, "{%f, %f, %f},\n", (two[0][2]*sin(rad) + two[0][0]*cos(rad)) + j, 0.000000, (two[0][2]*cos(rad) - two[0][0]*sin(rad)) + i);
 				fprintf(pFile, "{%f, %f, %f},\n", (two[1][2]*sin(rad) + two[1][0]*cos(rad)) + j, 0.000000, (two[1][2]*cos(rad) - two[1][0]*sin(rad)) + i);
 				fprintf(pFile, "{%f, %f, %f},\n", (two[2][2]*sin(rad) + two[2][0]*cos(rad)) + j, 0.055000, (two[2][2]*cos(rad) - two[2][0]*sin(rad)) + i);
