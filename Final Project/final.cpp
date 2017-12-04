@@ -5159,6 +5159,9 @@ float randbuilding[25][25];
 int randcolor[25][25];
 int randrot[50][50];
 
+int OVERVIEW = 0;
+
+
 //Textures//
 unsigned char *texture;
 int texture_w, texture_h;
@@ -5324,16 +5327,23 @@ Display( )
 
 
 	// set the eye position, look-at position, and up-vector:
+    if (OVERVIEW == 0){
+        gluLookAt( cameraVector[0], cameraVector[1], cameraVector[2],
+                   lookatVector[0], lookatVector[1], lookatVector[2],
+                   0., 1., 0.);
+    }
+    else{
+        gluLookAt( 15., 25., 25.,
+                   0., 1., 0.,
+                   0., 1., 0.);
+    }
 
 
-	gluLookAt( cameraVector[0], cameraVector[1], cameraVector[2],
-			   lookatVector[0], lookatVector[1], lookatVector[2],
-			   0., 1., 0.);
 
 
 	// rotate the scene:
 
-	glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+	 glRotatef( (GLfloat)Yrot, 0., 1., 0. );
 	glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
 
@@ -5385,8 +5395,8 @@ Display( )
 	int i;
 	int j;
 
-	for (i = -50; i < 50; i++){
-		for (j = -50; j < 50; j++){
+	for (i = -40; i < 40; i++){
+		for (j = -40; j < 40; j++){
 			if((i < -25 || i > 24 || j < -25 || j > 24) ) {
 				glPushMatrix();
 				Grass->Use();
@@ -5424,7 +5434,7 @@ Display( )
 	//glVertexPointer( 3, GL_FLOAT, 3*sizeof(GLfloat), 0 );
 	for(i = 4; i < 21; i++) {
 		for(j = 4; j < 21; j++) {
-			if(town[i][j] == 1) {
+			if(town[i][j] == 1 || town[i][j] == 2) {
                 if(i%3 != 0) {
                     glPushMatrix( );
                         glScalef(3, 1, 3);
@@ -5441,38 +5451,6 @@ Display( )
                     glPopMatrix( );
                 }
 			}
-            else if(town[i][j] == 2){
-                glPushMatrix( );
-                glScalef(3, 1, 3);
-                glTranslatef((12 - i), 0.01, (12 - j));
-                glEnable(GL_TEXTURE_2D);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-                glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_w, texture_h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
-
-                //build road
-                glPushMatrix();
-                glBegin( GL_QUADS );
-                glColor3f( 0., 0., 0. );
-                glNormal3f( 0., 1.,  0. );
-                glTexCoord2f( 0, 0 );
-                glVertex3f( 0.5, 0, -0.5);
-                glTexCoord2f( 0, 0.1 );
-                glVertex3f( 0.5, 0, 0.5);
-                glTexCoord2f( 0.1, 0.1 );
-                glVertex3f( -0.5, 0, 0.5);
-                glTexCoord2f( 0.1, 0 );
-                glVertex3f( -0.5, 0, -0.5);
-                glEnd( );
-                glPopMatrix();
-                glDisable(GL_TEXTURE_2D);
-                glPopMatrix( );
-
-            }
 			else if(town[i][j] == 3){
                 glPushMatrix( );
                     glScalef(3, 1, 3);
@@ -5490,8 +5468,7 @@ Display( )
 
     glPushMatrix( );
     glRotatef(90, 1, 0, 0);
-    glScalef(20, 20, 20);
-
+    glScalef(8, 8, 8);
     drawSkydome(5, 50, 50);
     glPopMatrix( );
 
@@ -6056,10 +6033,10 @@ Keyboard( unsigned char c, int x, int y )
 			break;
 		case 'h':
 		case 'H':
-			if ( showHead == 0 )
-				showHead = 1;
+			if ( OVERVIEW == 0 )
+                OVERVIEW = 1;
 			else
-				showHead = 0;
+                OVERVIEW = 0;
 			break;
 		case '1':
 			if ( showCluster == 0 )
@@ -6477,6 +6454,16 @@ drawBuilding(float width, float height , const GLfloat window[3]){
         glVertex3f( x,  0,  -z);
     glEnd( );
     glPopMatrix( );
+    glPushMatrix( );
+    glBegin( GL_QUADS );
+    glColor3f(0.2578125, 0.28515625, 0.28515625 );
+    glNormal3f( 0., 1.,  0. );
+    glVertex3f( -x, 0,  -z );
+    glVertex3f( -x, 0,  z );
+    glVertex3f(  x,  0,  z );
+    glVertex3f( x,  0,  -z);
+    glEnd( );
+    glPopMatrix( );
 
 
 }
@@ -6575,7 +6562,7 @@ void drawSkydome( float radius, int lats, int longs ) {
 	Clouds->SetUniformVariable((char *) "u_resolution_y", (float) res[1]);
 	Clouds->SetUniformVariable((char *) "u_time", (float) (abs(sin(DEG2RAD * (int) (Time * 3.6)) / 2)));
 
-    glutWireSphere(radius, 80, 80);
+    glutSolidSphere(radius, 80, 80);
 
     Clouds->Use(0);
 
